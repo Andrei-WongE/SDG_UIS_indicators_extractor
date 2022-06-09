@@ -31,7 +31,7 @@ options(scipen = 100, digits = 4) # Prefer non-scientific notation
 if (!require("pacman")) {
   install.packages("pacman")
 }
-pacman::p_load(dplyr, tidyverse, tidylog, openxlsx, here, purrr, listviewer)
+pacman::p_load(dplyr, tidyverse, tidylog, openxlsx, here, purrr, listviewer, fs)
 
 ## Runs the following ----------------------------------------------------------
 
@@ -89,6 +89,66 @@ db |> distinct(gpe) |>
 
 # NOTE: Using PCFC 2021 for reporting years 2020 and 2021 as per UIS directive.
 
+
+## Set up the folder structure -------------------------------------------------
+
+folder_structure <- (
+  #Main folder
+  c("rf_indicators"
+    # Sub-folders
+    ,"rf_indicators/GPE indicator 2"   
+    ,"rf_indicators/GPE indicator 3i" 
+    ,"rf_indicators/GPE indicator 3ii"
+    ,"rf_indicators/GPE indicator 6"  
+    ,"rf_indicators/GPE indicator 7"
+    ,"rf_indicators/GPE indicator 8"  
+  ))
+
+for (j in seq_along(folder_structure)) {
+  dir.create(folder_structure[j])
+}
+
+directory_excels <- as.list(folder_structure)
+directory_excels[1] <- NULL # Deleting main folder
+
+## Bundling UIS indicators into GPE indicators ---------------------------------
+
+db <- db |> mutate(gpe_new = substr(gpe, 1, 15)) 
+
+  # Bundling conditions
+
+    #group_2 <- #All 2
+    
+    #group_3i <- c("GPE indicator 3ia"
+    #              ,"GPE indicator 3ib")
+    
+    #group_3ii <- c("GPE indicator 3iia"
+    #               ,"GPE indicator 3iib"
+    #               ,"GPE indicator 3iic")
+    
+    #group_6 <- #All 6
+    
+    #group_7 <- #All 7
+    
+    #group_8 <- #ALL 8
+
+db <- db |>
+  mutate(gpe_new = case_when(gpe == "GPE indicator 3ia"  ~ "GPE indicator 3i"
+                             ,gpe == "GPE indicator 3iia" ~ "GPE indicator 3ii"
+                             ,gpe == "GPE indicator 3iib" ~ "GPE indicator 3ii"
+                             ,gpe == "GPE indicator 3iic" ~ "GPE indicator 3ii"
+                             ,gpe == "GPE indicator 3ib"  ~ "GPE indicator 3i"
+                             ,TRUE ~ gpe_new
+  ))
+
+bundle <- unique(db2$gpe_new) # 6 GPE indicators, as indicator 1 was dropped 
+listviewer::jsonedit(bundle) # Verifying that we have the right indicators
+
+# Generating database for sub-folders
+db2 <- db |> 
+  select(gpe, gpe_new) |> 
+  distinct()
+
 ## Implementing function -------------------------------------------------------
 
   pcfc <- pcfc_2021
@@ -121,83 +181,75 @@ db |> distinct(gpe) |>
 
   
 lapply(indicators, function(i) {
-  
-  # Setting-up conditions
-  if (reporting_year == 2020 & i %in% subset_a) {
-    subset_years <- c(2017:2019)
-    # pcfc <- pcfc_2020
     
-  } else if (reporting_year == 2020) {
-    subset_years <- c(2015:2019)
-    # pcfc <- pcfc_2020
+    # Setting-up conditions
+    if (reporting_year == 2020 & i %in% subset_a) {
+      subset_years <- c(2017:2019)
+      # pcfc <- pcfc_2020
+      
+    } else if (reporting_year == 2020) {
+      subset_years <- c(2015:2019)
+      # pcfc <- pcfc_2020
+      
+    } else if (reporting_year == 2021 & i %in% subset_a) {
+      subset_years <- c(2018:2020)
+      # pcfc <- pcfc_2021
+      
+    } else if (reporting_year == 2021) {
+      subset_years <- c(2016:2020)
+      # pcfc <- pcfc_2021
+    }
     
-  } else if (reporting_year == 2021 & i %in% subset_a) {
-    subset_years <- c(2018:2020)
-    # pcfc <- pcfc_2021
+    print(paste("Processing indicator", i, subset_years, Sys.time()))
     
-  } else if (reporting_year == 2021) {
-    subset_years <- c(2016:2020)
-    # pcfc <- pcfc_2021
+    # Subsetting by years and indicator
+    DF <- data[data[,3] %in% subset_years,]
+    DF <- data[data[,6] %in% i,]
+    
+    # Adding full country list
+    DF <- left_join(pcfc, DF, by = "iso")
+    
+    # Generating data.frame list
+    DF_list <-  DF |> 
+      select(!c(country_name_en, code_un)) |>
+      group_by(indicator_id) |> 
+      pivot_wider(
+        names_from = indicator_id,
+        values_from = value
+      ) |>
+      group_map(~.x, .keep = TRUE)
+    
+    # Dirty way to direct sub-directory flow
+    j <- which(db2$gpe == i) 
+                
+    folder <- db2[j,2]
+   
+    
+    # Exporting each indicator to workbook
+    openxlsx::write.xlsx(DF_list, here("rf_indicators", folder,
+                                       paste0(i, "_UIS_",
+                                              reporting_year,".xlsx")))
+    
+    # Merging files in the same directory  
+    path <- here("rf_indicators", folder)
+    merge_file_name <- here("rf_indicators", folder,
+                           paste0(i, "_UIS_",
+                                  reporting_year,"_MERGE.xlsx"))
+    
+    filenames_list <- list.files(path = path, full.names = TRUE)
+    
+    All <- lapply(filenames_list, function(filename) {
+      
+      print(paste("Merging", filename, sep = " "))
+      
+      read.xlsx(filename, sheet = i)
+    })
+    
+    df <- do.call(rbind.data.frame, All)
+    write.xlsx(df, merge_file_name)
   }
+  )
   
-  print(paste('Processing element', i, subset_years, Sys.time()))
-
-  # Subsetting by years and indicator
-  DF <- data[data[,3] %in% subset_years,]
-  DF <- data[data[,6] %in% i,]
-  
-  # Adding full country list
-  DF <- left_join(pcfc, DF, by = "iso")
-  
-  # Generating data.frame list
-  DF_list <-  DF |> 
-    select(!c(country_name_en, code_un)) |>
-    group_by(indicator_id) |> 
-    pivot_wider(
-    names_from = indicator_id,
-    values_from = value
-  ) |>
-    group_map(~.x, .keep = TRUE)
-  
-  #Exporting each indicator to workbook
-  openxlsx::write.xlsx(DF_list, here("SDG_related_indicators","rf_indicators", 
-                                   paste0(i, "_UIS_",reporting_year,".xlsx")))
-  
-  }
-)
-
-## Bundling UIS indicators into GPE indicators ---------------------------------
-
-db2 <- db |> mutate(gpe_new = substr(gpe, 1, 15)) 
-  
-  # Bundling conditions
-    
-    #group_2 <- #All 2
-    
-    #group_3i <- c("GPE indicator 3ia"
-    #              ,"GPE indicator 3ib")
-    
-    #group_3ii <- c("GPE indicator 3iia"
-    #               ,"GPE indicator 3iib"
-    #               ,"GPE indicator 3iic")
-    
-    #group_6 <- #All 6
-    
-    #group_7 <- #All 7
-    
-    #group_8 <- #ALL 8
-  
-db2 <- db2 |>
-  mutate(gpe_new = case_when(gpe == "GPE indicator 3ia"  ~ "GPE indicator 3i"
-                            ,gpe == "GPE indicator 3iia" ~ "GPE indicator 3ii"
-                            ,gpe == "GPE indicator 3iib" ~ "GPE indicator 3ii"
-                            ,gpe == "GPE indicator 3iic" ~ "GPE indicator 3ii"
-                            ,gpe == "GPE indicator 3ib"  ~ "GPE indicator 3i"
-                            ,TRUE ~ gpe_new
-  ))
-
-bundle <- unique(db2$gpe_new) # 6 GPE indicators, as indicator 1 was dropped 
-listviewer::jsonedit(bundle) # Verifying that we have the right indicators
 
 
 
