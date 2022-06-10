@@ -96,12 +96,12 @@ folder_structure <- (
   #Main folder
   c("rf_indicators"
     # Sub-folders
-    ,"rf_indicators/GPE indicator 2"   
-    ,"rf_indicators/GPE indicator 3i" 
-    ,"rf_indicators/GPE indicator 3ii"
-    ,"rf_indicators/GPE indicator 6"  
-    ,"rf_indicators/GPE indicator 7"
-    ,"rf_indicators/GPE indicator 8"  
+    ,"rf_indicators/Indicator_2"   
+    ,"rf_indicators/Indicator_3i" 
+    ,"rf_indicators/Indicator_3ii"
+    ,"rf_indicators/Indicator_6"  
+    ,"rf_indicators/Indicator_7i"
+    ,"rf_indicators/Indicator_8i"  
   ))
 
 for (j in seq_along(folder_structure)) {
@@ -133,21 +133,33 @@ db <- db |> mutate(gpe_new = substr(gpe, 1, 15))
     #group_8 <- #ALL 8
 
 db <- db |>
-  mutate(gpe_new = case_when(gpe == "GPE indicator 3ia"  ~ "GPE indicator 3i"
+  mutate(gpe_new = case_when( gpe == "GPE indicator 3ia"  ~ "GPE indicator 3i"
                              ,gpe == "GPE indicator 3iia" ~ "GPE indicator 3ii"
                              ,gpe == "GPE indicator 3iib" ~ "GPE indicator 3ii"
                              ,gpe == "GPE indicator 3iic" ~ "GPE indicator 3ii"
                              ,gpe == "GPE indicator 3ib"  ~ "GPE indicator 3i"
                              ,TRUE ~ gpe_new
-  ))
+  )) |> 
+  mutate(gpe_new = recode(gpe_new,  "GPE indicator 8" = "GPE indicator 8i"
+                  ,"GPE indicator 7" = "GPE indicator 7i"))
 
-bundle <- unique(db2$gpe_new) # 6 GPE indicators, as indicator 1 was dropped 
-listviewer::jsonedit(bundle) # Verifying that we have the right indicators
 
 # Generating database for sub-folders
 db2 <- db |> 
   select(gpe, gpe_new) |> 
+  mutate(gpe_new = substr(gpe, 4, 16)) |> 
+  mutate(gpe_new = case_when(grepl("GPE indicator 6", gpe) ~ "indicator 6",
+                             TRUE ~ gpe_new)) |>
   distinct()
+  # Trim
+  db2$gpe_new <- trimws(db2$gpe_new, which = c("left"))
+  # Sentence_case
+  db2$gpe_new <- gsub("^(\\w)(\\w+)", "\\U\\1\\L\\2", db2$gpe_new, perl = TRUE)
+  # Snake_case
+  db2$gpe_new <- gsub("\\s", "_",  db2$gpe_new, perl = TRUE)
+  
+  bundle <- unique(db2$gpe_new) # 6 GPE indicators, as indicator 1 was dropped 
+  listviewer::jsonedit(bundle) # Verifying that we have the right indicators
 
 ## Implementing function -------------------------------------------------------
 
@@ -155,7 +167,7 @@ db2 <- db |>
   
   data <- db
   
-  reporting_year <- 2020
+  reporting_year <- 2021
   
   indicators <- unique(db$gpe)
   listviewer::jsonedit(indicators) # Verifying that we have the right indicators
@@ -225,31 +237,28 @@ lapply(indicators, function(i) {
     folder <- db2[j,2]
    
     
-    # Exporting each indicator to workbook
+    # Exporting each indicator to specific folder and workbook
     openxlsx::write.xlsx(DF_list, here("rf_indicators", folder,
-                                       paste0(i, "_UIS_",
-                                              reporting_year,".xlsx")))
-    
-    # Merging files in the same directory  
-    path <- here("rf_indicators", folder)
-    merge_file_name <- here("rf_indicators", folder,
-                           paste0(i, "_UIS_",
-                                  reporting_year,"_MERGE.xlsx"))
-    
-    filenames_list <- list.files(path = path, full.names = TRUE)
-    
-    All <- lapply(filenames_list, function(filename) {
-      
-      print(paste("Merging", filename, sep = " "))
-      
-      read.xlsx(filename, sheet = i)
-    })
-    
-    df <- do.call(rbind.data.frame, All)
-    write.xlsx(df, merge_file_name)
+                                       paste0(i, "_CY",
+                                              reporting_year,".xlsx"))
+                         , overwrite = TRUE)
   }
   )
-  
 
-
+# ├ Merging files in the same directory ----
+# 
+# directory <- directory_excels
+# directory[1] <- NULL # Deleting folder that does not need to merge
+# 
+# for (j in directory) {
+# 
+#   data.files = list.files(here(j), 
+#                           pattern = paste0("*","_",reporting_year,".xlsx"))
+#   
+#   data <- lapply(data.files, function(x) read.xlsx(here(j,x), sheet = 1))
+#   
+#   for (i in data) {
+#     data <- rbind(data[i])
+#   }
+# }
 
