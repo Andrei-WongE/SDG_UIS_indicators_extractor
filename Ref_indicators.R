@@ -142,21 +142,32 @@ db <- db |>
   )) |> 
   mutate(gpe_new = recode(gpe_new,  "GPE indicator 8" = "GPE indicator 8i"
                   ,"GPE indicator 7" = "GPE indicator 7i"))
-
+  # Trim
+  db$gpe_new <- trimws(db$gpe_new, which = c("left"))
+  db$gpe     <- trimws(db$gpe, which = c("left"))
+  
+  # Snake_case 
+  db$gpe_new <- db$gpe_new <- gsub("\\s", "_",  db$gpe_new, perl = TRUE)
+  db$gpe     <- db$gpe     <- gsub("\\s", "_",  db$gpe, perl = TRUE)
+  
 
 # Generating database for sub-folders
 db2 <- db |> 
   select(gpe, gpe_new) |> 
-  mutate(gpe_new = substr(gpe, 4, 16)) |> 
-  mutate(gpe_new = case_when(grepl("GPE indicator 6", gpe) ~ "indicator 6",
-                             TRUE ~ gpe_new)) |>
   distinct()
+  
+  # Deleting GPE_ in order to match folder naming
+  db2$gpe_new <- db2$gpe_new <- gsub("[GPE_$]", " ",  db2$gpe_new, perl = TRUE)
+  
   # Trim
   db2$gpe_new <- trimws(db2$gpe_new, which = c("left"))
-  # Sentence_case
-  db2$gpe_new <- gsub("^(\\w)(\\w+)", "\\U\\1\\L\\2", db2$gpe_new, perl = TRUE)
-  # Snake_case
-  db2$gpe_new <- gsub("\\s", "_",  db2$gpe_new, perl = TRUE)
+  
+  # Sentence_case in order to match folder naming
+  db2$gpe_new <- gsub("([\\w])([\\w]+)", "\\U\\1\\L\\2", db2$gpe_new ,
+                      perl = TRUE)
+
+  # Snake_case in order to match folder naming
+  db2$gpe_new <- db2$gpe_new <- gsub("\\s", "_",  db2$gpe_new, perl = TRUE)
   
   bundle <- unique(db2$gpe_new) # 6 GPE indicators, as indicator 1 was dropped 
   listviewer::jsonedit(bundle) # Verifying that we have the right indicators
@@ -167,29 +178,29 @@ db2 <- db |>
   
   data <- db
   
-  reporting_year <- 2021
+  reporting_year <- 2020
   
   indicators <- unique(db$gpe)
   listviewer::jsonedit(indicators) # Verifying that we have the right indicators
   
     
-  subset_a <- c("GPE indicator 2",
-                  "GPE indicator 3ia",
-                  "GPE indicator 3ib",
-                  "GPE indicator 7ia",
-                  "GPE indicator 7ib",
-                  "GPE indicator 7ic",
-                  "GPE indicator 7id",
-                  "GPE indicator 8i3",
-                  "GPE indicator 8i4",
-                  "GPE indicator 8i5",
-                  "GPE indicator 8i6",
-                  "GPE indicator 8i7",
-                  "GPE indicator 8i8",
-                  "GPE indicator 8i9",
-                  "GPE indicator 8i10",
-                  "GPE indicator 8i11",
-                  "GPE indicator 8i12")
+  subset_a <- c(  "GPE_indicator_2",
+                  "GPE_indicator_3ia",
+                  "GPE_indicator_3ib",
+                  "GPE_indicator_7ia",
+                  "GPE_indicator_7ib",
+                  "GPE_indicator_7ic",
+                  "GPE_indicator_7id",
+                  "GPE_indicator_8i3",
+                  "GPE_indicator_8i4",
+                  "GPE_indicator_8i5",
+                  "GPE_indicator_8i6",
+                  "GPE_indicator_8i7",
+                  "GPE_indicator_8i8",
+                  "GPE_indicator_8i9",
+                  "GPE_indicator_8i10",
+                  "GPE_indicator_8i11",
+                  "GPE_indicator_8i12")
 
   
 lapply(indicators, function(i) {
