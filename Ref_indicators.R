@@ -178,7 +178,7 @@ db2 <- db |>
   
   data <- db
   
-  reporting_year <- 2020
+  reporting_year <- 2021
   
   indicators <- unique(db$gpe)
   listviewer::jsonedit(indicators) # Verifying that we have the right indicators
@@ -206,7 +206,7 @@ db2 <- db |>
 lapply(indicators, function(i) {
     
     # Setting-up conditions
-    if (reporting_year == 2020 & i %in% subset_a) {
+    subset_years <- (if (reporting_year == 2020 & i %in% subset_a) {
       subset_years <- c(2017:2019)
       # pcfc <- pcfc_2020
       
@@ -221,20 +221,22 @@ lapply(indicators, function(i) {
     } else if (reporting_year == 2021) {
       subset_years <- c(2016:2020)
       # pcfc <- pcfc_2021
-    }
+    })
     
     print(paste("Processing indicator", i, subset_years, Sys.time()))
+    # Sys.sleep(3)
     
     # Subsetting by years and indicator
-    DF <- data[data[,3] %in% subset_years,]
     DF <- data[data[,6] %in% i,]
+    DF <- DF[DF[,3] %in% subset_years,]
+ 
     
     # Adding full country list
-    DF <- left_join(pcfc, DF, by = "iso")
-    
+    DF <- left_join(pcfc, DF, by = "iso") 
+      
     # Generating data.frame list
     DF_list <-  DF |> 
-      select(!c(country_name_en, code_un)) |>
+      select(!c(country_name_en, code_un, gpe, gpe_new)) |>
       group_by(indicator_id) |> 
       pivot_wider(
         names_from = indicator_id,
