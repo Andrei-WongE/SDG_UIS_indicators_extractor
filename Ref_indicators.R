@@ -31,7 +31,8 @@ options(scipen = 100, digits = 4) # Prefer non-scientific notation
 if (!require("pacman")) {
   install.packages("pacman")
 }
-pacman::p_load(dplyr, tidyverse, tidylog, openxlsx, here, purrr, listviewer, fs)
+pacman::p_load(dplyr, tidyverse, tidylog, openxlsx, here, future.apply,
+               progressr, listviewer, fs)
 
 ## Runs the following ----------------------------------------------------------
 
@@ -173,7 +174,19 @@ db2 <- db |>
   listviewer::jsonedit(bundle) # Verifying that we have the right indicators
 
 ## Implementing function -------------------------------------------------------
-
+  # Parallel Processing set-up
+  plan(multisession)
+  nbrOfWorkers()
+  
+  # Customization of how progress is reported
+  handlers(global = TRUE)
+  handlers(handler_progress(
+      format   = ":spin [:bar] :percent in :elapsed ETA: :eta",
+      width    = 60,
+      complete = "+"
+    )
+  )
+  
   pcfc <- pcfc_2021
   
   data <- db
@@ -203,7 +216,11 @@ db2 <- db |>
                   "GPE_indicator_8i12")
 
   
-lapply(indicators, function(i) {
+Ref_indicators <- function(indicators) {
+  
+  p <- progressr::progressor(along = indicators)
+  
+  future_lapply(indicators, function(i) {
     
     # Setting-up conditions
     subset_years <- (if (reporting_year == 2020 & i %in% subset_a) {
@@ -223,7 +240,6 @@ lapply(indicators, function(i) {
       # pcfc <- pcfc_2021
     })
     
-    print(paste("Processing indicator", i, subset_years, Sys.time()))
     # Sys.sleep(3)
     
     # Subsetting by years and indicator
@@ -242,6 +258,8 @@ lapply(indicators, function(i) {
         names_from = indicator_id,
         values_from = value
       ) |>
+      # group_by(iso, contains(data_year)) |>   #Obtain max available data year
+      # mutate(contains(data_year) = max(contains(data_year))) |> 
       group_map(~.x, .keep = TRUE)
     
     # Dirty way to direct sub-directory flow
@@ -255,23 +273,32 @@ lapply(indicators, function(i) {
                                        paste0(i, "_CY",
                                               reporting_year,".xlsx"))
                          , overwrite = TRUE)
-  }
+    
+    # Signaling progression updates
+    p(paste("Processing indicator", i, subset_years, Sys.time(),"\t"))
+    
+  }, future.seed = NULL #Ignore random numbers warning
   )
+}
+  
+Ref_indicators(indicators)
 
-# ├ Merging files in the same directory ----
-# 
-# directory <- directory_excels
-# directory[1] <- NULL # Deleting folder that does not need to merge
-# 
-# for (j in directory) {
-# 
-#   data.files = list.files(here(j), 
-#                           pattern = paste0("*","_",reporting_year,".xlsx"))
-#   
-#   data <- lapply(data.files, function(x) read.xlsx(here(j,x), sheet = 1))
-#   
-#   for (i in data) {
-#     data <- rbind(data[i])
-#   }
-# }
+#├ Merging files in the same directory ----
+
+directory <- directory_excels
+directory[1] <- NULL # Deleting folder that does not need to merge
+
+for (j in directory) {
+
+  data.files = list.files(path    = here(j),
+                          pattern = paste0("*","CY",reporting_year,".xlsx"))
+
+  data <- future_lapply(data.files, function(x) read.xlsx(here(j,x), 
+                                                          sheet = 1),
+                        future.seed = NULL)
+
+  for (i in data) {
+    data <- rbind(data[i])
+  }
+  }
 
