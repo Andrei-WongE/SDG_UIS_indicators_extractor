@@ -67,90 +67,90 @@
     # 8.iii.b: No data
     # 8.iii.c: data_leg -> data_country
       # Listing workbooks
-
-      rm(data.files)
-  
-      data.files <- list.files(
-        path = here("2025_RF_indicators", "Indicator_8iiic"),
-        pattern = paste0("*.xlsx"),
-        recursive = TRUE
-      )
-      # Removing element form list, template
-
-      pattern <- "template"
-      data.files <- data.files[-grep(pattern, data.files)]
-
-      # Loading workbooks
-
-      wb <- lapply(data.files, function(x) {
-        loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x))
-      })
-
-      # Rename woksheets
-
-      lapply(wb, function(x) renameWorksheet(x, "data_leg", "data_country"))
-
-      # Change formula manually!!! [CHECK!]
-
-      # Save
-
-      lapply(seq_along(wb), function(i) {
-        saveWorkbook(wb[[i]],
-          file = here("2025_RF_indicators", "Indicator_8iiic", data.files[i]),
-          overwrite = TRUE
-        )
-      })
-
-      rm(wb)
+# 
+#       rm(data.files)
+#   
+#       data.files <- list.files(
+#         path = here("2025_RF_indicators", "Indicator_8iiic"),
+#         pattern = paste0("*.xlsx"),
+#         recursive = TRUE
+#       )
+#       # Removing element form list, template
+# 
+#       pattern <- "template"
+#       data.files <- data.files[-grep(pattern, data.files)]
+# 
+#       # Loading workbooks
+# 
+#       wb <- lapply(data.files, function(x) {
+#         loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x))
+#       })
+# 
+#       # Rename woksheets
+# 
+#       lapply(wb, function(x) renameWorksheet(x, "data_leg", "data_country"))
+# 
+#       # Change formula manually!!! [CHECK!]
+# 
+#       # Save
+# 
+#       lapply(seq_along(wb), function(i) {
+#         saveWorkbook(wb[[i]],
+#           file = here("2025_RF_indicators", "Indicator_8iiic", data.files[i]),
+#           overwrite = TRUE
+#         )
+#       })
+# 
+#       rm(wb)
       
     # 9: No data
     # 10: No data
     # 11: No data
     # 12.i & 12.ii: data_country_grant -> data_country
       # Listing workbooks
-      rm(data.files)
-      
-      data.files <- list.files(
-        path = here("2025_RF_indicators", "Indicator_12i_12ii"),
-        pattern = paste0("*.xlsx"),
-        recursive = TRUE
-      )
-      # Removing element form list, template
-
-      pattern <- "template"
-      data.files <- data.files[-grep(pattern, data.files)]
-
-      # Loading workbooks
-
-      wb <- lapply(data.files, function(x) {
-        loadWorkbook(here("2025_RF_indicators", "Indicator_12i_12ii", x))
-      })
-
-      # Rename woksheets
-
-      lapply(wb, function(x) {
-        renameWorksheet(
-          x,
-          "data_country_grant",
-          "data_country"
-        )
-      })
-
-      # Change formula manually!!! [CHECK!]
-
-      # Save
-
-      lapply(seq_along(wb), function(i) {
-        saveWorkbook(wb[[i]],
-          file = here(
-            "2025_RF_indicators", "Indicator_12i_12ii",
-            data.files[i]
-          ),
-          overwrite = TRUE
-        )
-      })
-
-      rm(wb)
+      # rm(data.files)
+      # 
+      # data.files <- list.files(
+      #   path = here("2025_RF_indicators", "Indicator_12i_12ii"),
+      #   pattern = paste0("*.xlsx"),
+      #   recursive = TRUE
+      # )
+      # # Removing element form list, template
+      # 
+      # pattern <- "template"
+      # data.files <- data.files[-grep(pattern, data.files)]
+      # 
+      # # Loading workbooks
+      # 
+      # wb <- lapply(data.files, function(x) {
+      #   loadWorkbook(here("2025_RF_indicators", "Indicator_12i_12ii", x))
+      # })
+      # 
+      # # Rename woksheets
+      # 
+      # lapply(wb, function(x) {
+      #   renameWorksheet(
+      #     x,
+      #     "data_country_grant",
+      #     "data_country"
+      #   )
+      # })
+      # 
+      # # Change formula manually!!! [CHECK!]
+      # 
+      # # Save
+      # 
+      # lapply(seq_along(wb), function(i) {
+      #   saveWorkbook(wb[[i]],
+      #     file = here(
+      #       "2025_RF_indicators", "Indicator_12i_12ii",
+      #       data.files[i]
+      #     ),
+      #     overwrite = TRUE
+      #   )
+      # })
+      # 
+      # rm(wb)
     
     # 13.i: No data
     # 13.ii: No data
@@ -180,35 +180,55 @@
   
 # ├ Extract by sheet and merge -------------------------------------------------
 
-
 indicators_db <- function(sheet_names) {
     
   p <- progressr::progressor(along = sheet_names) 
   
-  future_lapply(seq_along(sheet_names), function(i) {
-    
+  db <- future_lapply(seq_along(sheet_names), function(i) {
+  
+  # Generating list of paths  
   file_list <- directory_excels %>% 
     fs::dir_ls(., recurse = TRUE, type = "file", glob = "*.xlsx") %>%
     # Only keep correct files, include indicator, exclude template
     fs::path_filter(., regexp = "*.template.xlsx$", invert = TRUE) %>%
-    fs::path_filter(., regexp = "*.[0-9].xlsx$")
+    fs::path_filter(., regexp = "*.[0-9].xlsx$") 
   
-  
+  # Creating database for each sheet
   indicator <- file_list %>% 
-    map_dfr(~readWorkbook(.,
-                       sheet = sheet_names[i],
-                       colNames = TRUE,
-                       skipEmptyRows = TRUE,
-                       check.names = TRUE,
-                       fillMergedCells = FALSE) %>% 
+    map_dfr(~readWorkbook(.
+                          , sheet = sheet_names[i]
+                          , colNames = TRUE
+                          , skipEmptyRows = TRUE
+                          , check.names = TRUE
+                          , fillMergedCells = FALSE) %>% 
             mutate(across(.fns = as.character))
    , .id = "file_path")
 
-  # exists(indicator_database_i)
-  # is.environment(indicators_db)
+  # Creating indicator id variable
+  indicator$id <- path_ext_remove(path_file(indicator$file_path)) 
   
-  # assign(paste0("indicator_database_", i),
-  #        indicator_database,
+  indicator$id <- gsub("(GPE_indicator_)|(GPE2025_Indicator_)|(GPE2025_indicator_)"
+                             , ""
+                             , indicator$id
+                             , perl = TRUE
+                            )
+  
+  indicator <- indicator %>%
+              separate(.
+                       , id 
+                       , c("ind_id", "ind_year")
+                       , sep = "_"
+                       , remove = TRUE
+                       , extra = "warn") 
+  
+  indicator <- indicator %>%
+              select(!file_path)
+            
+  # exists("indicator")
+  # is.environment(indicator)
+
+  # assign(paste0("indicator", i),
+  #        indicator,
   #        envir = .GlobalEnv)  # saves to environment
   # assign()) does not work when running in parallel!!!
   
@@ -219,19 +239,41 @@ indicators_db <- function(sheet_names) {
                        , overwrite = TRUE)
   
   # Signaling progression updates
-  p(paste("Processing sheet", i, Sys.time(),"\t"))
+  p(paste("Processing sheet", sheet_names[i], Sys.time(),"\t"))
   
-  # return(paste0("indicator_",sheet_names[i]))
-  
-  }, future.seed = NULL #Ignore random numbers warning
+  }, future.seed  = NULL #Ignore random numbers warning
   )
-  
   invisible(gc(verbose = FALSE)) # Collecting garbage after each iteration
-  
+  return(db)
   } 
 
  indicators_db(sheet_names)
- 
 
- # ├ 
+ # ├ Cleaning and setting-up data ----------------------------------------------
  
+   data_country <- readWorkbook(here("2025_RF_indicators",
+                                       "data_country.xlsx"))
+   
+   data_aggregate <- readWorkbook(here("2025_RF_indicators",
+                                       "data_aggregate.xlsx"))
+   
+   metadata <- readWorkbook(here("2025_RF_indicators",
+                                       "metadata.xlsx"))
+   
+   # mutate(common = path_common(.$file_path)) %>% 
+   # mutate(id = gsub(paste0(c(common), "/")
+   #                     , ""
+   #                     , .$file_path
+   #                     , perl = TRUE)) %>%
+   # mutate(id = gsub("(GPE).*", ""
+   #             , .$id
+   #             , perl = TRUE)) %>%
+   # extract(., id, c("ind_id", "ind_year")
+   #          , regex = "([[:alnum:]]+)/([[:alnum:]]+)"
+   #          , remove = FALSE)
+   # separate(.$id, c("ind_id", "ind_year"), sep = "\\/", remove = TRUE) %>% 
+
+
+   
+   
+   
