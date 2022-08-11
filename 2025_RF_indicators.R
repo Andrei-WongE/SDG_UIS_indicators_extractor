@@ -58,7 +58,7 @@
     # 5.ii.c
     # 6
     # 7.i
-    # 7.ii: No data  
+    # 7.ii: MOCK DATA! Manually modified file name.
     # 8.i
     # 8.ii.a
     # 8.ii.b: No data
@@ -67,147 +67,223 @@
     # 8.iii.b: No data
     # 8.iii.c: data_leg -> data_country
       # Listing workbooks
-
-      # rm(data.files)
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_8iiic"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x))
-      # })
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) renameWorksheet(x, "data_leg", "data_country"))
-      # 
-      # # Change formula manually!!! [CHECK!]
-      # 
-      # # Save
-      # 
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #     file = here("2025_RF_indicators", "Indicator_8iiic", data.files[i]),
-      #     overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)
       
+      rm(data.files)
+
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_8iiic"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x))
+      })
+
+      # Rename woksheets
+
+      lapply(wb, function(x) renameWorksheet(x, "data_leg", "data_country"))
+
+      # Save
+
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+          file = here("2025_RF_indicators", "Indicator_8iiic", data.files[i]),
+          overwrite = TRUE
+        )
+      })
+
+      rm(wb)
     # 9: No data
     # 10: No data
     # 11: No data
     # 12.i & 12.ii: data_country_grant -> data_country
-      # #Listing workbooks
-      # rm(data.files)
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_12i_12ii"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_12i_12ii", x))
-      # })
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) {
-      #   renameWorksheet(
-      #     x,
-      #     "data_country_grant",
-      #     "data_country"
-      #   )
-      # })
-      # 
-      # # Change formula manually!!! [CHECK!]
-      # 
-      # # Save
-      # 
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #     file = here(
-      #       "2025_RF_indicators", "Indicator_12i_12ii",
-      #       data.files[i]
-      #     ),
-      #     overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)
-    
+      #Listing workbooks
+      rm(data.files)
+
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_12i_12ii"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_12i_12ii", x))
+      })
+
+      # Rename woksheets
+
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+      
+      # Save
+
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+          file = here(
+            "2025_RF_indicators", "Indicator_12i_12ii",
+            data.files[i]
+          ),
+          overwrite = TRUE
+        )
+      })
+
+      rm(wb)
     # 13.i: No data
     # 13.ii: No data
     # 14.i.a: No data
-    # 14.i.b: No data
+    # 14.i.b: data_country_grant -> data_country
+      #Listing workbooks
+      rm(data.files)
+      
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_14ib"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+      
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+      
+      # Loading workbooks
+      
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_14ib", x))
+      })
+      
+      # Rename woksheets
+      
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+      
+      # Save
+      
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+                     file = here(
+                       "2025_RF_indicators", "Indicator_14ib",
+                       data.files[i]
+                     ),
+                     overwrite = TRUE
+        )
+      })
+      
+      rm(wb)  
+      
     # 14.ii: No data
-    # 15
+    # 15: Accumulated data! Only upload last year data!
     # 16.i: No data
     # 16.ii: No data
     # 16.iii: data_country_grant -> data_country
       #Listing workbooks
-      # rm(data.files)
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_16iii"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_16iii", x))
-      # })
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) {
-      #   renameWorksheet(
-      #     x,
-      #     "data_country_grant",
-      #     "data_country"
-      #   )
-      # })
-      # 
-      # # Change formula manually!!! [CHECK!]
-      # 
-      # # Save
-      # 
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #     file = here(
-      #       "2025_RF_indicators", "Indicator_16iii",
-      #       data.files[i]
-      #     ),
-      #     overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)
+      rm(data.files)
+
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_16iii"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_16iii", x))
+      })
+
+      # Rename woksheets
+
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+
+      # Save
+
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+          file = here(
+            "2025_RF_indicators", "Indicator_16iii",
+            data.files[i]
+          ),
+          overwrite = TRUE
+        )
+      })
+
+      rm(wb)
     # 17 (data_policy??? currently not in database)
-    # 18
-  
+    # 18 (data_donor -> data_country????)
+      #Listing workbooks
+      rm(data.files)
+      
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_18"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+      
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+      
+      # Loading workbooks
+      
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_18", x))
+      })
+      
+      # Rename woksheets
+      
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_donor",
+          "data_country"
+        )
+      })
+      
+      # Save
+      
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+                     file = here(
+                       "2025_RF_indicators", "Indicator_18",
+                       data.files[i]
+                     ),
+                     overwrite = TRUE
+        )
+      })
+      
+      rm(wb)
   
   # Parallel Processing set-up
   plan(multisession)
@@ -238,7 +314,8 @@ indicators_db <- function(sheet_names) {
     # Only keep correct files, include indicator, exclude template
     fs::path_filter(., regexp = "*.template.xlsx$", invert = TRUE) %>%
     fs::path_filter(., regexp = "*.[0-9].xlsx$") %>%
-    fs::path_filter(., regexp = "(PCFC).*.xlsx$", invert = TRUE) 
+    fs::path_filter(., regexp = "(PCFC).*.xlsx$", invert = TRUE)
+    
   
   db <- future_lapply(seq_along(sheet_names), function(i) {
   
@@ -272,7 +349,7 @@ indicators_db <- function(sheet_names) {
   
   indicator <- indicator %>%
               select(!file_path) %>%
-              mutate(data_update = Sys.Date()) %>%
+              mutate(data_update = format(Sys.Date())) %>%
               dplyr::relocate(c("ind_id", "ind_year"))
             
   # exists("indicator")
@@ -286,6 +363,9 @@ indicators_db <- function(sheet_names) {
 
   # Signaling progression updates
   p(paste("Processing sheet", sheet_names[i], Sys.time(), "\t"))
+  
+  # Collecting garbage after each iteration
+  invisible(gc(verbose = FALSE, reset = TRUE)) 
   
   }, future.seed  = NULL #Ignore random numbers warning
   )
@@ -314,11 +394,9 @@ indicators_db <- function(sheet_names) {
    names(All) <- sheet_names
 
    openxlsx::write.xlsx(All
-                        , here("2025_RF_indicators", "indicators_db-V0.3.xlsx")
+                        , here("2025_RF_indicators", "indicators_db-V0.5.xlsx")
                         , sheetName = names(All)
                         , overwrite = TRUE)
-   
-   invisible(gc(verbose = FALSE, reset = TRUE)) # Collecting garbage after each iteration
   }
 
  indicators_db(sheet_names)
