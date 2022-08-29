@@ -148,7 +148,7 @@
       rm(wb)
     # 13.i: No data
     # 13.ii: No data
-    # 14.i.a: No data
+    # 14.i.a: MOCK DATA! Manually modified file name
     # 14.i.b: data_country_grant -> data_country
       #Listing workbooks
       rm(data.files)
@@ -338,7 +338,7 @@ indicators_db <- function(sheet_names) {
                              , indicator$id
                              , perl = TRUE
                             )
-  
+
   indicator <- indicator %>%
                 separate(.
                          , id 
@@ -351,24 +351,38 @@ indicators_db <- function(sheet_names) {
               select(!file_path) %>%
               mutate(data_update = format(Sys.Date())) %>%
               dplyr::relocate(c("ind_id", "ind_year"))
-            
+
   # exists("indicator")
-  
-   openxlsx::write.xlsx(indicator
+
+  # db <- list(indicator)
+
+  openxlsx::write.xlsx(indicator
                         , here("2025_RF_indicators",
                                paste(i,"indicator_db.xlsx", sep = "_"))
                         , sheetName = sheet_names[i]
                         , append = TRUE
                         , overwrite = TRUE)
-
+  
   # Signaling progression updates
   p(paste("Processing sheet", sheet_names[i], Sys.time(), "\t"))
   
   # Collecting garbage after each iteration
   invisible(gc(verbose = FALSE, reset = TRUE)) 
   
+  # return(db)
+  
   }, future.seed  = NULL #Ignore random numbers warning
   )
+  
+  # names(db) <- sheet_names
+  # 
+  # openxlsx::write.xlsx(db
+  #                      , here("2025_RF_indicators",
+  #                             paste("indicator_db.xlsx", sep = "_"))
+  #                      , sheetName = names(db)
+  #                      , colNames = TRUE
+  # )
+  
 
   # Delete previous file
    unlink(list.files(here("2025_RF_indicators")
@@ -390,16 +404,16 @@ indicators_db <- function(sheet_names) {
 
      read.xlsx(filename)
    })
-   
+
    names(All) <- sheet_names
 
    openxlsx::write.xlsx(All
-                        , here("2025_RF_indicators", "indicators_db-V0.5.xlsx")
+                        , here("2025_RF_indicators", "indicators_db-V0.6.xlsx")
                         , sheetName = names(All)
                         , overwrite = TRUE)
   }
 
- indicators_db(sheet_names)
+  indicators_db(sheet_names)
 
  # ├ Cleaning and setting-up data ----------------------------------------------
    
