@@ -14,7 +14,7 @@
 ##
 ## ---------------------------
 ##
-## Notes: Needs input of indicators_db-Vx file from 2025_RF_indicators.R
+## Notes: Needs input of users_db-Vx file from 2025_RF_indicators.R
 ##
 ## ---------------------------
 
@@ -27,29 +27,30 @@
  if (!require("pacman")) {
    install.packages("pacman")
  }
- pacman::p_load(here, dplyr, janitor, tidyverse)
+ pacman::p_load(here, dplyr, janitor, tidyverse, future.apply
+                , progressr)
 
 ## Runs the following --------
 
 
 ## Import data and create output directory -------------------------------------
 
- # Create output directory
+# Create output directory
  output_directory <- c("2025_RF_indicators/Countries_db")
  
  dir.create(output_directory)
  
  files <- list.files(here("2025_RF_indicators")
-            , pattern = "[indicators_db]-"
+            , pattern = "[users_db]-"
             , full.names = TRUE)
  
- # Assure we are using the correct file
+# Assure we are using the correct file
  if (length(files) > 1) {
    message("More than one file found, please select file")
    
    Sys.sleep(2)
    
-   choose.files(here("2025_RF_indicators/..."))
+   files <- choose.files(here("2025_RF_indicators/..."))
    
  } else {
    
@@ -57,133 +58,82 @@
    message("The file that will be processed is ", paste(m))
  }
  
- # Reading file
+# Reading file
 
  sheets <- openxlsx::getSheetNames(files)
  db <- lapply(sheets, openxlsx::read.xlsx, xlsxFile = files)
  names(db) <- sheets
 
+# Pre processing diagnostics
  
- country <- unique(db[[1]][["country"]])
+ country <- as.vector(unique(db[[1]][["country"]]))
  
  message("The number of countries in the data set is "
          , paste(length(country)))
  
- message("The countries are "
-         , paste(sapply(country, paste), collapse = " "))
-
+ Sys.sleep(1)
  
- indicators_db <- function(country) {
+ message("The countries are "
+         , paste(sapply(country, paste), "\t"))
+
+# Parallel Processing set-up
+ plan(multisession)
+ nbrOfWorkers()
+ 
+# Customization of how progress is reported
+ handlers(global = TRUE)
+ handlers(handler_progress(
+   format   = ":spin [:bar] :percent in :elapsed ETA: :eta",
+   width    = 60,
+   complete = "+"
+ )
+ ) 
+ 
+users_db <- function(country) {
    
    p <- progressr::progressor(along = country)
    
-   db <- future_lapply(seq_along(country), function(i) {
+     db <- future_lapply(seq_along(country), function(i) {
+       
+     # Subset A: by country, data_country sheet
+       
+       db <- db[[1]][db[[1]][["country"]] %in% country[1],] |> 
+     # Transpose data_country sheet
+               group_by(ind_id, ind_year) |>
+               select(!c("iso", "region", "income_group", "pcfc")) |> 
+               pivot_wider( id_cols = c(ind_id, ind_year)
+                           ,names_from  = ind_year
+                           ,values_from = DF[!c(ind_id, ind_year)]
+               )
      
-     # Creating database for each sheet
-     indicator <- file_list %>% 
-       map_dfr(~openxlsx::readWorkbook(.
-                                       , sheet = country[i]
-                                       , colNames = TRUE
-                                       , skipEmptyRows = TRUE
-                                       , check.names = TRUE
-                                       , fillMergedCells = FALSE) %>% 
-                 mutate(across(.fns = as.character))
-               , .id = "file_path")
+       subset_ind <- db[[1]][["id"]] 
+     # Subset B: by indicator, data_aggregate and metadata sheet
      
-     # Creating indicator id variable
-     indicator$id <- fs::path_ext_remove(fs::path_file(indicator$file_path)) 
-     
-     indicator$id <- gsub("(GPE_indicator-)|(GPE2025_Indicator-)|(GPE2025_indicator-)"
-                          , ""
-                          , indicator$id
-                          , perl = TRUE
-     )
-     
-     indicator <- indicator %>%
-       separate(.
-                , id 
-                , c("ind_id", "ind_year")
-                , sep = "-"
-                , remove = TRUE
-                , extra = "warn") 
-     
-     indicator <- indicator %>%
-       select(!file_path) %>%
-       mutate(data_update = format(Sys.Date())) %>%
-       dplyr::relocate(c("ind_id", "ind_year"))
-     
-     # exists("indicator")
-     
-     db <- Filter(function(x) is(x, "data.frame"), mget(ls()))
-     
-     openxlsx::write.xlsx(indicator
-                          , here("2025_RF_indicators",
-                                 paste(country[i],".xlsx", sep = "_"))
-                          , sheetName = country[i]
-                          , append = TRUE
-                          , overwrite = TRUE)
-     
+        db <- db[[2]][db[[2]][["id"]] %in% subset_ind,]
+        db <- db[[3]][db[[3]][["id"]] %in% subset_ind,]
+      
+      # Saving database by country
+      
+        openxlsx::write.xlsx(db
+                             , here("2025_RF_indicators/Countries_db",
+                                    paste0( i
+                                          # , sheet_names[i]
+                                          ,".xlsx"))
+                             , sheetName = names(db)
+                             , append = TRUE
+                             , overwrite = TRUE)
+      
      # Signaling progression updates
-     p(paste("Processing sheet", country[i], Sys.time(), "\t"))
+       p(paste("Processing sheet", country[i], Sys.time(), "\t"))
      
      # Collecting garbage after each iteration
-     invisible(gc(verbose = FALSE, reset = TRUE)) 
-     
-     return(db)
+       invisible(gc(verbose = FALSE, reset = TRUE)) 
+       rm(db)
      
    }, future.seed  = NULL #Ignore random numbers warning
    )
-   
-   # names(db) <- country
-   # 
-   # openxlsx::write.xlsx(db
-   #                      , here("2025_RF_indicators",
-   #                             paste("indicators_db-V0.6.xlsx", sep = "_"))
-   #                      , sheetName = names(db)
-   #                      , colNames = TRUE
-   # )
-   # rm(db)
-   
-   # Delete previous file
-   unlink(list.files(here("2025_RF_indicators")
-                     , pattern = "[indicators_db]-"
-                     , full.names = TRUE))
-   
-   # Set file path list
-   filenames_list <- list.files(path = here("2025_RF_indicators")
-                                , pattern    = ".xlsx"
-                                , all.files  = FALSE
-                                , full.names = TRUE
-                                , recursive  = FALSE)
-   
-   # Read all files
-   
-   All <- lapply(filenames_list, function(filename){
-     
-     print(paste("Merging", filename, sep = " "))
-     
-     read.xlsx(filename)
-   })
-   
-   names(All) <- country
-   
-   openxlsx::write.xlsx(All
-                        , here("2025_RF_indicators", "indicators_db-V0.6.xlsx")
-                        , sheetName = names(All)
-                        , overwrite = TRUE)
  }
  
- indicators_db(country)
+ users_db(country)
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-
