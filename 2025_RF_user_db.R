@@ -66,15 +66,20 @@
 
 # Pre processing diagnostics
  
- country <- as.vector(unique(db[[1]][["country"]]))
+ country <- sort(as.vector(unique(na.omit(db[[1]][["country"]])))
+                 ,decreasing = FALSE)
  
  message("The number of countries in the data set is "
          , paste(length(country)))
  
  Sys.sleep(1)
  
- message("The countries are "
-         , paste(sapply(country, paste), "\t"))
+ message("The countries are: "
+         , paste(sapply(country, paste), "\n"))
+ 
+#Uploading index sheet
+ 
+ 
 
 # Parallel Processing set-up
  plan(multisession)
@@ -97,24 +102,46 @@ users_db <- function(country) {
        
      # Subset A: by country, data_country sheet
        
-       db <- db[[1]][db[[1]][["country"]] %in% country[1],] |> 
-     # Transpose data_country sheet
-               group_by(ind_id, ind_year) |>
-               select(!c("iso", "region", "income_group", "pcfc")) |> 
-               pivot_wider( id_cols = c(ind_id, ind_year)
-                           ,names_from  = ind_year
-                           ,values_from = DF[!c(ind_id, ind_year)]
-               )
+       db[[1]] <- db[[1]][db[[1]][["country"]] %in% country[1],]
      
-       subset_ind <- db[[1]][["id"]] 
+       subset_ind <- db[[1]][["id"]]
+       
      # Subset B: by indicator, data_aggregate and metadata sheet
+       db[[2]] <- db[[2]][db[[2]][["id"]] %in% subset_ind,]
+       db[[3]] <- db[[3]][db[[3]][["id"]] %in% subset_ind,]
+       
+     # Subset C: by main indicators
+       subset_ind2 <- db[[2]][["indicator"]]
+       
+       # db[[1]] <- db[[2]][db[[1]][["id"]] %in% subset_ind2,]
+       db[[3]] <- db[[3]][db[[2]][["var_name"]] %in% subset_ind2,]
+       
+       |
+     # Transpose data_country sheet
+       # db[[1]] <- group_by(ind_id, ind_year) |>
+       #   select(!c("iso", "region", "income_group", "pcfc")) |> 
+       #   pivot_wider( id_cols = c(ind_id, ind_year)
+       #                ,names_from  = ind_year
+       #                ,values_from = DF[!c(ind_id, ind_year)]
+       #   )
+
+     # Adding index sheet
+       addWorksheet(wb, sheetName = index)
+       data <- get(paste0(sheet_names[i], "_db", sep = ""))
+        
+     # Write data
+       writeData(wb
+                  ,sheet = index
+                  ,data
+                  ,colNames = TRUE)
      
-        db <- db[[2]][db[[2]][["id"]] %in% subset_ind,]
-        db <- db[[3]][db[[3]][["id"]] %in% subset_ind,]
-      
-      # Saving database by country
-      
-        openxlsx::write.xlsx(db
+     # Worksheet order
+       worksheetOrder(wb)
+       names(wb)
+       worksheetOrder(wb) <- c(4, 1, 2, 3)
+        
+     # Saving database by country
+       openxlsx::write.xlsx(db
                              , here("2025_RF_indicators/Countries_db",
                                     paste0( i
                                           # , sheet_names[i]
@@ -123,12 +150,12 @@ users_db <- function(country) {
                              , append = TRUE
                              , overwrite = TRUE)
       
-     # Signaling progression updates
-       p(paste("Processing sheet", country[i], Sys.time(), "\t"))
+      # Signaling progression updates
+        p(paste("Processing sheet", country[i], Sys.time(), "\t"))
      
-     # Collecting garbage after each iteration
-       invisible(gc(verbose = FALSE, reset = TRUE)) 
-       rm(db)
+      # Collecting garbage after each iteration
+        invisible(gc(verbose = FALSE, reset = TRUE)) 
+        rm(db)
      
    }, future.seed  = NULL #Ignore random numbers warning
    )
