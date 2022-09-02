@@ -369,16 +369,13 @@ indicators_db <- function(sheet_names) {
   }
 
   # exists("indicator")
-  # Collecting databases in a list
-  db <- Filter(function(x) is(x, "data.frame"), mget(ls()))
   
-  # Saving to file
-  openxlsx::write.xlsx(indicator
-                        , here("2025_RF_indicators",
-                               paste0(i,"_", sheet_names[i],".xlsx"))
-                        , sheetName = sheet_names[i]
-                        , append = TRUE
-                        , overwrite = TRUE)
+  # Collecting databases in a list
+  list_db <- list(indicator)
+  
+  # Combining elements of list such as to maintain column headers 
+  n_r <- seq_len(max(sapply(list_db, nrow)))
+  db <- do.call(cbind, lapply(list_db, function(x) x[n_r, , drop = FALSE]))
   
   # Signaling progression updates
   p(paste("Processing sheet", sheet_names[i], Sys.time(), "\t"))
@@ -391,46 +388,15 @@ indicators_db <- function(sheet_names) {
   }, future.seed  = NULL #Ignore random numbers warning
   )
   
-  # names(db) <- sheet_names
-  # 
-  # openxlsx::write.xlsx(db
-  #                      , here("2025_RF_indicators",
-  #                             paste("indicators_db-V0.6.xlsx", sep = "_"))
-  #                      , sheetName = names(db)
-  #                      , colNames = TRUE
-  # )
-  # rm(db)
+  names(db) <- sheet_names
 
-  # Delete previous file
-   unlink(list.files(here("2025_RF_indicators")
-                     , pattern = "[indicators_db]-"
-                     , full.names = TRUE))
-
-  # Set file path list
-   filenames_list <- list.files(path = here("2025_RF_indicators")
-                                , pattern    = ".xlsx"
-                                , all.files  = FALSE
-                                , full.names = TRUE
-                                , recursive  = FALSE)
-
-  # Read all files
-
-   All <- lapply(filenames_list, function(filename){
-
-     print(paste("Merging", filename, sep = " "))
-
-     read.xlsx(filename)
-   })
-
-   names(All) <- sheet_names
-
-   openxlsx::write.xlsx(All
-                        , here("2025_RF_indicators"
-                        , "indicators_db-V0.7.xlsx")
-                        , sheetName = names(All)
-                        , overwrite = TRUE)
-   
-   rm(db)
+  openxlsx::write.xlsx(db
+                       , here("2025_RF_indicators",
+                              paste("indicators_db-V0.6.xlsx", sep = "_"))
+                       , sheetName = names(db)
+                       , colNames = TRUE
+  )
+  rm(db)
   }
 
   indicators_db(sheet_names)
