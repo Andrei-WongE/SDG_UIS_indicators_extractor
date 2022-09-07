@@ -392,10 +392,15 @@ indicators_db <- function(sheet_names) {
 
   openxlsx::write.xlsx(db
                        , here("2025_RF_indicators",
-                              paste("indicators_db-V0.6.xlsx", sep = "_"))
+                              paste("indicators_db-V0.75.xlsx", sep = "_"))
                        , sheetName = names(db)
                        , colNames = TRUE
   )
+  # Listing indicators in the database
+  ind_final <- sort(as.vector(unique(db[[1]][["ind_id"]])))
+  message(paste("The processed indicators are:","\n") 
+          , paste(sapply(ind_final, paste), "\n"))
+  
   rm(db)
   }
 
