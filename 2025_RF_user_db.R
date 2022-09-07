@@ -19,7 +19,7 @@
 ## ---------------------------
 
 ## Program Set-up ------------
-
+ # .rs.restartR() # As to avoid conflicts with 2025_RF_indicators
  options(scipen = 100, digits = 4) # Prefer non-scientific notation
 
 ## Load required packages ----
@@ -102,66 +102,76 @@ users_db <- function(country) {
    
    p <- progressr::progressor(along = country)
    
-        future_lapply(seq_along(country), function(i) {
-       
+      future_lapply(seq_along(country), function(i) {
+
      # Subset A: by country, data_country sheet
-       db[[1]] <- db[[1]][db[[1]][["country"]] %in% country[1],]
+       DF <- db
+
+       DF[[1]] <- db[[1]][db[[1]][["country"]] %in% country[i],]
      
-       subset_ind <- db[[1]][["id"]]
+       subset_ind <- DF[[1]][["id"]]
        
      # Subset B: by indicator, data_aggregate and metadata sheet
-       db[[2]] <- db[[2]][db[[2]][["id"]] %in% subset_ind,]
-       db[[3]] <- db[[3]][db[[3]][["id"]] %in% subset_ind,]
+       DF[[2]] <- db[[2]][db[[2]][["id"]] %in% subset_ind,]
+       DF[[3]] <- db[[3]][db[[3]][["id"]] %in% subset_ind,]
        
      # Subset C: by main indicators
-       subset_ind2 <- db[[2]][["indicator"]]
+       subset_ind2 <- DF[[2]][["indicator"]]
        
-       db[[3]] <- db[[3]][db[[3]][["var_name"]] %in% subset_ind2,]
+       DF[[3]] <- DF[[3]][DF[[3]][["var_name"]] %in% subset_ind2,]
        
      # Clean data
       #Delete unnecessary columns specific for data_country
-       db[[1]] <- db[[1]] |> 
+       DF[[1]] <- DF[[1]] |> 
            select(!c("iso", "region", "income_group", "pcfc"))
        
-       #Delete unnecessary columns ALL sheets
+       #Delete unnecessary columns, ALL sheets
        vect <- seq(1,3)
        clean_func <- function(x) {
-          db[[x]] <- db[[x]] |> 
+          DF[[x]] <- DF[[x]] |> 
            select(!c("id", "data_update"))
        }
        
-       db <- lapply(vect, clean_func)
+       DF <- lapply(vect, clean_func)
      
       #Delete duplicates in metadata
-       db[[3]] <- db[[3]] |> 
+       DF[[3]] <- DF[[3]] |> 
            select(!c("ind_year")) |>
            dplyr::distinct()
          
      # Transpose data_country sheet
-       db[[1]] <- group_by(ind_id, ind_year) |>
-         select(!c("iso", "region", "income_group", "pcfc")) |>
-         pivot_wider( id_cols = c(ind_id, ind_year)
-                      ,names_from  = ind_year
-                      ,values_from = DF[!c(ind_id, ind_year)]
-         )
+       # DF[[1]] <- group_by(ind_id, ind_year) |>
+       #   select(!c("iso", "region", "income_group", "pcfc")) |>
+       #   pivot_longer( id_cols = c(ind_id, ind_year)
+       #                ,names_from  = ind_year
+       #                ,values_from = DF[!c(ind_id, ind_year)]
+       #   )
 
      # Adding index sheet
        wb <- openxlsx::createWorkbook()
-       db <- c("index_data" = list(index_data), db)
-
-     # Write data
+       DF <- c(list(index_data), DF)
+       names(DF) <- c("index", names(db))
+       
+     # Write data to workbook
        purrr::imap(
-         .x = db,
+         .x = DF,
          .f = function(df, object_name) {
            openxlsx::addWorksheet(wb = wb, sheetName = object_name)
            openxlsx::writeData(wb = wb, sheet = object_name, x = df)
          }
        )
-       
-     # Saving database by country
+
+       # Write country name in index sheet, in cell (G,7)
+       openxlsx::writeData(  wb    =  wb
+                             , sheet = "index"
+                             , x     = i
+                             , xy    = c(7,7)
+       )
+
+     # Saving workbook by country
        openxlsx::saveWorkbook(  wb = wb
                               , here("2025_RF_indicators/Countries_db"
-                              , paste0( i,".xlsx"))
+                              , paste0(country[i],".xlsx"))
                               , overwrite = TRUE)
       
       # Signaling progression updates
@@ -169,13 +179,12 @@ users_db <- function(country) {
      
       # Collecting garbage after each iteration
         invisible(gc(verbose = FALSE, reset = TRUE)) 
-        
-        rm(db, wb)
-     
+
+        rm(DF, wb)
+
    }, future.seed  = NULL #Ignore random numbers warning
    )
  }
  
  users_db(country)
- 
  
