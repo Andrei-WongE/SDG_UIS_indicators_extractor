@@ -14,7 +14,7 @@
 ##
 ## ---------------------------
 ##
-## Notes: Needs input of users_db-Vx file from 2025_RF_indicators.R
+## Notes: Needs input of users_db-V[x] file from 2025_RF_indicators.R
 ##
 ## ---------------------------
 
@@ -28,7 +28,7 @@
    install.packages("pacman")
  }
  pacman::p_load(here, dplyr, janitor, tidyverse, future.apply
-                , progressr)
+                , progressr, openxlsx)
 
 ## Runs the following --------
 
@@ -78,25 +78,22 @@
  message("The countries are: "
          , paste(sapply(country, paste), "\n"))
  
- Sys.sleep(3)
+ Sys.sleep(2)
  
- #Uploading index sheet
- 
- index_data <-  openxlsx::read.xlsx(here("2025_RF_indicators"
-                                         ,"index.xlsx"))
-
 # Parallel Processing set-up
  plan(multisession)
  nbrOfWorkers()
  
 # Customization of how progress is reported
  handlers(global = TRUE)
- handlers(handler_progress(
-   format   = ":spin [:bar] :percent in :elapsed ETA: :eta",
-   width    = 60,
-   complete = "+"
- )
- ) 
+ handlers(list(
+   handler_progress( format = ":spin [:bar] :percent in :elapsed ETA: :eta"
+                    , width    = 60
+                    , complete = "+"
+ ),
+ handler_beepr(  finish   = "mario"
+               , interval = 2.0
+ )))
  
 users_db <- function(country) {
    
@@ -146,11 +143,9 @@ users_db <- function(country) {
        #                ,names_from  = ind_year
        #                ,values_from = DF[!c(ind_id, ind_year)]
        #   )
-
-     # Adding index sheet
+      
+     # Create workbook
        wb <- openxlsx::createWorkbook()
-       DF <- c(list(index_data), DF)
-       names(DF) <- c("index", names(db))
        
      # Write data to workbook
        purrr::imap(
@@ -160,27 +155,65 @@ users_db <- function(country) {
            openxlsx::writeData(wb = wb, sheet = object_name, x = df)
          }
        )
+       
+       temp <- tempfile(pattern = "c_temp", fileext = ".xlsx")
+       openxlsx::saveWorkbook(wb = wb, file = temp)
+       
+     # Adding index sheet
+       wb2 <- openxlsx::loadWorkbook(here("2025_RF_indicators"
+                                          ,"index.xlsx"))
 
-       # Write country name in index sheet, in cell (G,7)
-       openxlsx::writeData(  wb    =  wb
+     # Write country name in index sheet, in cell (G,7)
+       openxlsx::writeData(    wb    =  wb2
                              , sheet = "index"
-                             , x     = i
+                             , x     = country[i]
                              , xy    = c(7,7)
        )
 
+     # Insert GPE image
+       openxlsx::insertImage(  wb2
+                             , sheet = "index"
+                             , file  = here("2025_RF_indicators"
+                                            , "GPE.PNG")
+                             , width = 4
+                             , height = 1.2
+                             , startRow = 1
+                             , startCol = 1
+                             , units = "in"
+                             , dpi = 30
+                           )
+
+    # Set worksheet gridlines to hide
+       openxlsx::showGridLines(  wb            = wb2
+                               , sheet         = "index"
+                               , showGridLines = FALSE)
+
+    # Add databases to index sheet (inefficient code as appending workbook objects not possible ATM)
+       
+       lapply(names(wb), function(s) {
+         dt <- openxlsx::read.xlsx(temp, sheet = s)
+         openxlsx::addWorksheet(wb2 , sheetName = s)
+         openxlsx::writeData(wb2, s, dt)
+       })
+       
+       names(wb2) <- c(  "index"
+                       , "data_country"
+                       , "data_aggregate"
+                       , "metadata")
+
      # Saving workbook by country
-       openxlsx::saveWorkbook(  wb = wb
+       openxlsx::saveWorkbook(  wb = wb2
                               , here("2025_RF_indicators/Countries_db"
                               , paste0(country[i],".xlsx"))
                               , overwrite = TRUE)
       
-      # Signaling progression updates
-        p(paste("Processing sheet", country[i], Sys.time(), "\t"))
-     
-      # Collecting garbage after each iteration
-        invisible(gc(verbose = FALSE, reset = TRUE)) 
+    # Signaling progression updates
+      p(paste("Processing sheet", country[i], Sys.time(), "\t"))
 
-        rm(DF, wb)
+    # Collecting garbage after each iteration
+      invisible(gc(verbose = FALSE, reset = TRUE)) 
+
+    rm(DF, wb)
 
    }, future.seed  = NULL #Ignore random numbers warning
    )
