@@ -331,7 +331,7 @@ indicators_db <- function(sheet_names) {
             mutate(across(.fns = as.character))
    , .id = "file_path")
 
-  # Creating indicator id variable
+  # Creating indicator id variable and order variables
   indicator$id <- fs::path_ext_remove(fs::path_file(indicator$file_path)) 
   
   indicator$id <- gsub("(GPE_indicator-)|(GPE2025_Indicator-)|(GPE2025_indicator-)"
@@ -352,10 +352,20 @@ indicators_db <- function(sheet_names) {
               select(!file_path) %>%
               mutate(data_update = format(Sys.Date())) %>%
               dplyr::relocate(c("id", "ind_id", "ind_year"))
-  
+
   # Cleaning database 
   values_delete <- c("Technical%", "Notes%") # Thanks DescTools!
   
+  if (sheet_names[i] == "data_country") {
+    
+    indicator <- indicator |> 
+      dplyr::relocate(  "entity"
+                      , .after = "country"
+                     ) |> 
+      dplyr::relocate(  "data_year"
+                        , .before = "data_update")
+  }
+
   if (sheet_names[i] == "data_aggregate") {
   
     indicator <- indicator[!(indicator$indicator %like any% values_delete), ]
@@ -364,8 +374,8 @@ indicators_db <- function(sheet_names) {
   
   if (sheet_names[i] == "metadata") {
     
-    indicator <- indicator[!(indicator$var_name %like any% values_delete), ]
-    
+    indicator <- indicator[!(indicator$var_name %like any% values_delete), ] |>                       filter(!(var_name %in% "PCFC")) 
+
   }
 
   # exists("indicator")
