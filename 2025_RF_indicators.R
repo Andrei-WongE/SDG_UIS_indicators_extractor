@@ -302,13 +302,13 @@
 ## Extract by sheet and merge -------------------------------------------------
 
 indicators_db <- function(sheet_names) {
-    
+
   p <- progressr::progressor(along = sheet_names)
   # Delete previous file
   unlink(list.files(here("2025_RF_indicators")
                          , pattern = "[indicators_db]-"
                          , full.names = TRUE))
-  
+
   # Generating list of paths  
   file_list <- directory_excels %>% 
     fs::dir_ls(., recurse = TRUE, type = "file", glob = "*.xlsx") %>%
@@ -317,9 +317,9 @@ indicators_db <- function(sheet_names) {
     fs::path_filter(., regexp = "*.[0-9].xlsx$") %>%
     fs::path_filter(., regexp = "(PCFC).*.xlsx$", invert = TRUE)
     
-  
+
   db <- future_lapply(seq_along(sheet_names), function(i) {
-  
+
   # Creating database for each sheet
   indicator <- file_list %>% 
     map_dfr(~openxlsx::readWorkbook(.
@@ -331,9 +331,9 @@ indicators_db <- function(sheet_names) {
             mutate(across(.fns = as.character))
    , .id = "file_path")
 
-  # Creating indicator id variable and order variables
+  # Creating indicator id variable
   indicator$id <- fs::path_ext_remove(fs::path_file(indicator$file_path)) 
-  
+
   indicator$id <- gsub("(GPE_indicator-)|(GPE2025_Indicator-)|(GPE2025_indicator-)"
                              , ""
                              , indicator$id
@@ -347,15 +347,15 @@ indicators_db <- function(sheet_names) {
                          , sep = "-"
                          , remove = FALSE
                          , extra = "warn") 
-  
+
   indicator <- indicator %>%
               select(!file_path) %>%
               mutate(data_update = format(Sys.Date())) %>%
               dplyr::relocate(c("id", "ind_id", "ind_year"))
 
-  # Cleaning database 
+  # Cleaning database and order variables
   values_delete <- c("Technical%", "Notes%") # Thanks DescTools!
-  
+
   if (sheet_names[i] == "data_country") {
     
     indicator <- indicator |> 
@@ -364,40 +364,50 @@ indicators_db <- function(sheet_names) {
                      ) |> 
       dplyr::relocate(  "data_year"
                         , .before = "data_update")
-  }
+
+    indicator$grant_amount <- replace(
+      format(round(as.numeric(indicator$grant_amount), 1)
+            , nsmall     = 0
+            , big.mark   = ","
+            , scientific = FALSE)
+                             , is.na(indicator$grant_amount)
+                             , ""
+                             )
+
+    }
 
   if (sheet_names[i] == "data_aggregate") {
-  
+
     indicator <- indicator[!(indicator$indicator %like any% values_delete), ]
 
   }
-  
+
   if (sheet_names[i] == "metadata") {
-    
+
     indicator <- indicator[!(indicator$var_name %like any% values_delete), ] |>                       filter(!(var_name %in% "PCFC")) 
 
   }
 
   # exists("indicator")
-  
+
   # Collecting databases in a list
   list_db <- list(indicator)
-  
+
   # Combining elements of list such as to maintain column headers 
   n_r <- seq_len(max(sapply(list_db, nrow)))
   db <- do.call(cbind, lapply(list_db, function(x) x[n_r, , drop = FALSE]))
-  
+
   # Signaling progression updates
   p(paste("Processing sheet", sheet_names[i], Sys.time(), "\t"))
-  
+
   # Collecting garbage after each iteration
   invisible(gc(verbose = FALSE, reset = TRUE)) 
-  
+
   return(db)
-  
+
   }, future.seed  = NULL #Ignore random numbers warning
   )
-  
+
   names(db) <- sheet_names
 
   openxlsx::write.xlsx(db
@@ -406,11 +416,12 @@ indicators_db <- function(sheet_names) {
                        , sheetName = names(db)
                        , colNames = TRUE
   )
+
   # Listing indicators in the database
   ind_final <- sort(as.vector(unique(db[[1]][["ind_id"]])))
   message(paste("The processed indicators are:","\n") 
           , paste(sapply(ind_final, paste), "\n"))
-  
+
   rm(db)
   }
 
