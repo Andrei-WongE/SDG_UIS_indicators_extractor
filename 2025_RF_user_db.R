@@ -86,14 +86,12 @@
  
 # Customization of how progress is reported
  handlers(global = TRUE)
- handlers(list(
+ handlers(
    handler_progress( format = ":spin [:bar] :percent in :elapsed ETA: :eta"
                     , width    = 60
                     , complete = "+"
- ),
- handler_beepr(  finish   = "mario"
-               , interval = 2.0
- )))
+ )
+ )
  
 users_db <- function(country) {
    
@@ -105,32 +103,33 @@ users_db <- function(country) {
        DF <- db
 
        DF[[1]] <- db[[1]][db[[1]][["country"]] %in% country[i],]
-     
+
        subset_ind <- DF[[1]][["id"]]
-       
+
      # Subset B: by indicator, data_aggregate and metadata sheet
        DF[[2]] <- db[[2]][db[[2]][["id"]] %in% subset_ind,]
        DF[[3]] <- db[[3]][db[[3]][["id"]] %in% subset_ind,]
-       
+
      # Subset C: by main indicators
        subset_ind2 <- DF[[2]][["indicator"]]
-       
+
        DF[[3]] <- DF[[3]][DF[[3]][["var_name"]] %in% subset_ind2,]
-       
+
      # Clean data
       #Delete unnecessary columns specific for data_country
-       DF[[1]] <- DF[[1]] |> 
-           select(!c("iso", "region", "income_group", "pcfc"))
-       
-       #Delete unnecessary columns, ALL sheets
+        DF[[1]] <- DF[[1]] |> 
+           dplyr::select(!c("iso", "region", "income_group", "pcfc"))
+
+      #Delete unnecessary and empty columns, ALL sheets
        vect <- seq(1,3)
        clean_func <- function(x) {
           DF[[x]] <- DF[[x]] |> 
-           select(!c("id", "data_update"))
+           select(!c("id", "data_update")) |> 
+           remove_empty(which = c("cols"), quiet = TRUE) 
        }
-       
+
        DF <- lapply(vect, clean_func)
-     
+
       #Delete duplicates in metadata
        DF[[3]] <- DF[[3]] |> 
            select(!c("ind_year")) |>
@@ -175,12 +174,12 @@ users_db <- function(country) {
                              , sheet = "index"
                              , file  = here("2025_RF_indicators"
                                             , "GPE.PNG")
-                             , width = 4
-                             , height = 1.2
-                             , startRow = 1
-                             , startCol = 1
+                             , width = 2
+                             , height = 0.5
+                             , startRow = 2
+                             , startCol = 2
                              , units = "in"
-                             , dpi = 30
+                             , dpi = 300
                            )
 
     # Set worksheet gridlines to hide
@@ -208,7 +207,7 @@ users_db <- function(country) {
                               , overwrite = TRUE)
       
     # Signaling progression updates
-      p(paste("Processing sheet", country[i], Sys.time(), "\t"))
+      p(paste("Processing country", country[i], Sys.time(), "\t"))
 
     # Collecting garbage after each iteration
       invisible(gc(verbose = FALSE, reset = TRUE)) 
