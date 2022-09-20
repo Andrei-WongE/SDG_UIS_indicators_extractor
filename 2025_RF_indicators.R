@@ -29,7 +29,7 @@
     install.packages("pacman")
   }
   pacman::p_load(here, dplyr, tidyverse, DescTools, openxlsx, fs, future.apply,
-                 progressr)
+                 progressr, utils)
 
 ## Runs the following --------
 
@@ -43,8 +43,19 @@
   sheet_names <- c("data_country", "data_aggregate", "metadata")
   # sheet_names <- c(1, 2, 3)
     
-  # Checking sheet names! As of 2022/07/21
-  
+  # Checking sheet names! Data as of 2022/09/19
+  clean_sheet_names <- utils::askYesNo("Do you want to clean sheet name? (y/n)? "
+                                      , default = FALSE
+                                      , prompts = getOption("askYesNo"
+                                                            , gettext(
+                                                              c("Yes"
+                                                               ,"No"
+                                                               ,"Cancel")
+                                                                    )
+                                                            )
+                                       )
+
+    if (clean_sheet_names != FALSE) {
     # 1
     # 2
     # 3.i
@@ -58,7 +69,7 @@
     # 5.ii.c
     # 6
     # 7.i
-    # 7.ii: MOCK DATA! Manually modified file name.
+    # 7.ii:
     # 8.i
     # 8.ii.a
     # 8.ii.b: No data
@@ -67,224 +78,454 @@
     # 8.iii.b: No data
     # 8.iii.c: data_leg -> data_country
       # Listing workbooks
+      suppressWarnings(rm(data.files))
+  
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_8iiic"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
       
-      # rm(data.files)
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_8iiic"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x))
-      # })
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) renameWorksheet(x, "data_leg", "data_country"))
-      # 
-      # # Save
-      # 
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #     file = here("2025_RF_indicators", "Indicator_8iiic", data.files[i]),
-      #     overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+      
+      # Loading workbooks
+      
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x))
+      })
+      
+      # Rename woksheets
+      
+      lapply(wb, function(x) renameWorksheet(x, "data_leg", "data_country"))
+      
+      # Save
+      
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+          file = here("2025_RF_indicators", "Indicator_8iiic", data.files[i]),
+          overwrite = TRUE
+        )
+      })
+      
+      rm(wb)
+
     # 9: No data
     # 10: No data
     # 11: No data
     # 12.i & 12.ii: data_country_grant -> data_country
-      #Listing workbooks
-      # rm(data.files)
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_12i_12ii"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_12i_12ii", x))
-      # })
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) {
-      #   renameWorksheet(
-      #     x,
-      #     "data_country_grant",
-      #     "data_country"
-      #   )
-      # })
-      # 
-      # # Save
-      # 
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #     file = here(
-      #       "2025_RF_indicators", "Indicator_12i_12ii",
-      #       data.files[i]
-      #     ),
-      #     overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)
+      # Listing workbooks
+      suppressWarnings(rm(data.files))
+  
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_12i_12ii"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_12i_12ii", x))
+      })
+
+      # Rename woksheets
+
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+
+      # Save
+
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+          file = here(
+            "2025_RF_indicators", "Indicator_12i_12ii",
+            data.files[i]
+          ),
+          overwrite = TRUE
+        )
+      })
+
+      rm(wb)
+
     # 13.i: No data
     # 13.ii: No data
-    # 14.i.a: MOCK DATA! Manually modified file name
-    # 14.i.b: data_country_grant -> data_country
+    # 14.i.a: data_country_grant -> data_country
       #Listing workbooks
-      # rm(data.files)
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_14ib"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_14ib", x))
-      # })
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) {
-      #   renameWorksheet(
-      #     x,
-      #     "data_country_grant",
-      #     "data_country"
-      #   )
-      # })
-      # 
-      # # Save
-      # 
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #                file = here(
-      #                  "2025_RF_indicators", "Indicator_14ib",
-      #                  data.files[i]
-      #                ),
-      #                overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)  
+      suppressWarnings(rm(data.files))
+      
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_14ia"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_14ia", x))
+      })
+
+      # Rename woksheets
+
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+
+      # Save
+
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+                     file = here(
+                       "2025_RF_indicators", "Indicator_14ia",
+                       data.files[i]
+                     ),
+                     overwrite = TRUE
+        )
+      })
+      rm(wb)
+  
+    # 14.i.b: data_country_grant -> data_country
+       # Listing workbooks
+      suppressWarnings(rm(data.files))
+      
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_14ib"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_14ib", x))
+      })
+
+      # Rename woksheets
+
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+
+      # Save
+
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+                     file = here(
+                       "2025_RF_indicators", "Indicator_14ib",
+                       data.files[i]
+                     ),
+                     overwrite = TRUE
+        )
+      })
+
+      rm(wb)
       
     # 14.ii: No data
     # 15: Accumulated data! Only upload last year data!
     # 16.i: No data
     # 16.ii: No data
     # 16.iii: data_country_grant -> data_country
+       # Listing workbooks
+      suppressWarnings(rm(data.files))
+      
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_16iii"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_16iii", x))
+      })
+
+      # Rename woksheets
+
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+
+      # Save
+
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+          file = here(
+            "2025_RF_indicators", "Indicator_16iii",
+            data.files[i]
+          ),
+          overwrite = TRUE
+        )
+      })
+
+      rm(wb)
+    # 17: data_country_unique -> data_country
       #Listing workbooks
-      # rm(data.files)
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_16iii"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_16iii", x))
-      # })
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) {
-      #   renameWorksheet(
-      #     x,
-      #     "data_country_grant",
-      #     "data_country"
-      #   )
-      # })
-      # 
-      # # Save
-      # 
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #     file = here(
-      #       "2025_RF_indicators", "Indicator_16iii",
-      #       data.files[i]
-      #     ),
-      #     overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)
-    # 17 (data_policy??? currently not in database)
-    # 18 (data_donor -> data_country)
-      # #Listing workbooks
-      # suppressWarnings(rm(data.files))
-      # 
-      # data.files <- list.files(
-      #   path = here("2025_RF_indicators", "Indicator_18"),
-      #   pattern = paste0("*.xlsx"),
-      #   recursive = TRUE
-      # )
-      # # Removing element form list, template
-      # 
-      # pattern <- "template"
-      # data.files <- data.files[-grep(pattern, data.files)]
-      # 
-      # # Loading workbooks
-      # 
-      # wb <- lapply(data.files, function(x) {
-      #   loadWorkbook(here("2025_RF_indicators", "Indicator_18", x)) 
-      # })
-      #   
-      # 
-      # # Rename woksheets
-      # 
-      # lapply(wb, function(x) {
-      #   renameWorksheet(
-      #     x,
-      #     "data_donor",
-      #     "data_country"
-      #   )
-      # })
-      # 
-      # # Save
-      # lapply(seq_along(wb), function(i) {
-      #   saveWorkbook(wb[[i]],
-      #     file = here(
-      #       "2025_RF_indicators", "Indicator_18",
-      #       data.files[i]
-      #     ),
-      #     overwrite = TRUE
-      #   )
-      # })
-      # 
-      # rm(wb)
+      suppressWarnings(rm(data.files))
+      
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_17"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+      
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+      
+      # Loading workbooks
+      
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_17", x))
+      })
+      
+      
+      # Rename woksheets
+      
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_unique",
+          "data_country"
+        )
+      })
+      
+      # Save
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+                     file = here(
+                       "2025_RF_indicators", "Indicator_17",
+                       data.files[i]
+                     ),
+                     overwrite = TRUE
+        )
+      })
+      
+      rm(wb)
+      
+    # 18: data_donor -> data_country
+      #Listing workbooks
+      suppressWarnings(rm(data.files))
+
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_18"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+
+      # Loading workbooks
+
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_18", x))
+      })
+
+
+      # Rename woksheets
+
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_donor",
+          "data_country"
+        )
+      })
+
+      # Save
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+          file = here(
+            "2025_RF_indicators", "Indicator_18",
+            data.files[i]
+          ),
+          overwrite = TRUE
+        )
+      })
+
+      rm(wb)
+  }
   
+  # Indicators that need 2b formatted to comma separated thousands, 2 digit
+  formatting_integers <- c("ind_14ia_PA1_percentage_1"
+                           ,"ind_14ia_PA1_allocated"
+                           ,"ind_14ia_PA1_allocated_1"
+                           ,"ind_14ia_PA2_percentage_1"
+                           ,"ind_14ia_PA2_allocated"
+                           ,"ind_14ia_PA2_allocated_1"
+                           ,"ind_14ia_PA3_percentage_1"
+                           ,"ind_14ia_PA3_allocated"
+                           ,"ind_14ia_PA3_allocated_1"
+                           ,"ind_14ia_PA4_percentage_1"
+                           ,"ind_14ia_PA4_allocated"
+                           ,"ind_14ia_PA4_allocated_1"
+                           ,"ind_14ia_PA5_percentage_1"
+                           ,"ind_14ia_PA5_allocated"
+                           ,"ind_14ia_PA5_allocated_1"
+                           ,"ind_14ia_PA6_percentage_1"
+                           ,"ind_14ia_PA6_allocated"
+                           ,"ind_14ia_PA6_allocated_1"
+                           ,"ind_14ia_PA7_percentage_1"
+                           ,"ind_14ia_PA7_allocated"
+                           ,"ind_14ia_PA7_allocated_1"
+                           ,"ind_14ia_PA8_percentage_1"
+                           ,"ind_14ia_PA8_allocated"
+                           ,"ind_14ia_PA8_allocated_1"
+                           ,"ind_14ib_PA1_percentage_met"
+                           ,"ind_14ib_PA1_allocated"
+                           ,"ind_14ib_PA1_allocated_met"
+                           ,"ind_14ib_PA2_percentage_met"
+                           ,"ind_14ib_PA2_allocated"
+                           ,"ind_14ib_PA2_allocated_met"
+                           ,"ind_14ib_PA3_percentage_met"
+                           ,"ind_14ib_PA3_allocated"
+                           ,"ind_14ib_PA3_allocated_met"
+                           ,"ind_14ib_PA4_percentage_met"
+                           ,"ind_14ib_PA4_allocated"
+                           ,"ind_14ib_PA4_allocated_met"
+                           ,"ind_14ib_PA5_percentage_met"
+                           ,"ind_14ib_PA5_allocated"
+                           ,"ind_14ib_PA5_allocated_met"
+                           ,"ind_14ib_PA6_percentage_met"
+                           ,"ind_14ib_PA6_allocated"
+                           ,"ind_14ib_PA6_allocated_met"
+                           ,"ind_14ib_PA7_percentage_met"
+                           ,"ind_14ib_PA7_allocated"
+                           ,"ind_14ib_PA7_allocated_met"
+                           ,"ind_14ib_PA8_percentage_met"
+                           ,"ind_14ib_PA8_allocated"
+                           ,"ind_14ib_PA8_allocated_met"
+                           ,"pledged_amount_local_currency"
+                           ,"pledged_amount_USD"
+                           ,"pledge_fulfillment_local_currency"
+                           ,"pledge_fulfillment_USD"
+                           ,"pledge_fulfillment_percentage"
+                           ,"indi_2"
+                           ,"indi_2_f"
+                           ,"indi_2_m"
+                           ,"indi_3ia"
+                           ,"indi_3ia_f"
+                           ,"indi_3ia_m"
+                           ,"indi_3ib"
+                           ,"indi_3ib_f"
+                           ,"indi_3ib_m"
+                           ,"indi_3iia"
+                           ,"indi_3iia_f"
+                           ,"indi_3iia_m"
+                           ,"indi_3iia_wq1"
+                           ,"indi_3iia_wq2"
+                           ,"indi_3iia_wq3"
+                           ,"indi_3iia_wq4"
+                           ,"indi_3iia_wq5"
+                           ,"indi_3iia_rural"
+                           ,"indi_3iia_urban"
+                           ,"indi_3iib"
+                           ,"indi_3iib_f"
+                           ,"indi_3iib_m"
+                           ,"indi_3iib_wq1"
+                           ,"indi_3iib_wq2"
+                           ,"indi_3iib_wq3"
+                           ,"indi_3iib_wq4"
+                           ,"indi_3iib_wq5"
+                           ,"indi_3iib_rural"
+                           ,"indi_3iib_urban"
+                           ,"indi_3iic"
+                           ,"indi_3iic_f"
+                           ,"indi_3iic_m"
+                           ,"indi_3iic_wq1"
+                           ,"indi_3iic_wq2"
+                           ,"indi_3iic_wq3"
+                           ,"indi_3iic_wq4"
+                           ,"indi_3iic_wq5"
+                           ,"indi_3iic_rural"
+                           ,"indi_3iic_urban"
+                           ,"base_education_share"
+                           ,"current_education_share"
+                           ,"indi_5i_pop"
+                           ,"indi_6a1"
+                           ,"indi_6a1_f"
+                           ,"indi_6a1_m"
+                           ,"indi_6a2"
+                           ,"indi_6a2_f"
+                           ,"indi_6a2_m"
+                           ,"indi_6b1"
+                           ,"indi_6b1_f"
+                           ,"indi_6b1_m"
+                           ,"indi_6b2"
+                           ,"indi_6b2_f"
+                           ,"indi_6b2_m"
+                           ,"indi_6c1"
+                           ,"indi_6c1_f"
+                           ,"indi_6c1_m"
+                           ,"indi_6c2"
+                           ,"indi_6c2_f"
+                           ,"indi_6c2_m"
+                           ,"indi_7ia"
+                           ,"indi_7ia_f"
+                           ,"indi_7ia_m"
+                           ,"indi_7ib"
+                           ,"indi_7ib_f"
+                           ,"indi_7ib_m"
+                           ,"indi_7ic"
+                           ,"indi_7ic_f"
+                           ,"indi_7ic_m"
+                           ,"indi_7id"
+                           ,"indi_7id_f"
+                           ,"indi_7id_m"
+                           )
+
+
+  # Indicators that need 2b formatted from excel dates to date
+   formatting_date <- c("grant_start_date"
+                       ,"grant_report_submission_date"
+                       ,"grant_closing_date"
+                       ,"EOI.approval.date"
+                       )
+
+  # Get Date Origin for data conversion
+   DateOrigin <- getDateOrigin(here("2025_RF_indicators"
+                                   ,"Indicator_1"
+                                   ,"CY2020"
+                                   ,"GPE2025_indicator-1-CY2020.xlsx"
+                                   ))
+
 ## Parallel Processing set-up --------------------------------------------------
 
   plan(multisession)
@@ -299,7 +540,7 @@
   )
   )
   
-## Extract by sheet and merge -------------------------------------------------
+## Extract by sheet and merge --------------------------------------------------
 
 indicators_db <- function(sheet_names) {
 
@@ -357,7 +598,7 @@ indicators_db <- function(sheet_names) {
   values_delete <- c("Technical%", "Notes%") # Thanks DescTools!
 
   if (sheet_names[i] == "data_country") {
-    
+
     indicator <- indicator |> 
       dplyr::relocate(  "entity"
                       , .after = "country"
@@ -365,15 +606,26 @@ indicators_db <- function(sheet_names) {
       dplyr::relocate(  "data_year"
                         , .before = "data_update")
 
-    indicator$grant_amount <- replace(
-      format(round(as.numeric(indicator$grant_amount), 1)
-            , nsmall     = 0
-            , big.mark   = ","
-            , scientific = FALSE)
-                             , is.na(indicator$grant_amount)
-                             , ""
-                             )
+  # Formatting dates
+  indicator[(formatting_date)] <- lapply(indicator[(formatting_date)]
+                                        , openxlsx::convertToDate
+                                        , optional = TRUE
+                                        , orgin    = DateOrigin
+                                        )
 
+  indicator[is.na(formatting_date)] <- ""
+
+  # Formatting integers
+  indicator[formatting_integers] <- lapply( indicator[formatting_integers]
+                                            , function(x) replace(
+                                              format( round(as.numeric(x), 1)
+                                                    , nsmall     = 2
+                                                    , big.mark   = ","
+                                                    , scientific = FALSE)
+                                                                     , is.na(x)
+                                                                     , ""
+                                                                     )
+                                                  )
     }
 
   if (sheet_names[i] == "data_aggregate") {
@@ -395,7 +647,7 @@ indicators_db <- function(sheet_names) {
 
   # Combining elements of list such as to maintain column headers 
   n_r <- seq_len(max(sapply(list_db, nrow)))
-  db <- do.call(cbind, lapply(list_db, function(x) x[n_r, , drop = FALSE]))
+  db  <- do.call(cbind, lapply(list_db, function(x) x[n_r, , drop = FALSE]))
 
   # Signaling progression updates
   p(paste("Processing sheet", sheet_names[i], Sys.time(), "\t"))
@@ -410,11 +662,11 @@ indicators_db <- function(sheet_names) {
 
   names(db) <- sheet_names
 
-  openxlsx::write.xlsx(db
-                       , here("2025_RF_indicators",
-                              paste("indicators_db-V0.75.xlsx", sep = "_"))
-                       , sheetName = names(db)
-                       , colNames = TRUE
+  openxlsx::write.xlsx( db
+                      , here("2025_RF_indicators",
+                              paste("indicators_db-V0.9.xlsx", sep = "_"))
+                      , sheetName = names(db)
+                      , colNames  = TRUE
   )
 
   # Listing indicators in the database
@@ -427,27 +679,3 @@ indicators_db <- function(sheet_names) {
 
   indicators_db(sheet_names)
 
- # ├ Cleaning and setting-up data ----------------------------------------------
-   
-   # # Create a blank workbook
-   # wb <- openxlsx::createWorkbook()
-   # 
-   # # Add sheets to the workbook
-   # openxlsx::addWorksheet(wb, paste(sheet_names[i]))
-   # 
-   # # Exporting each db to specific workbook
-   # openxlsx::writeData(wb
-   #                      , sheet = sheet_names[i]
-   #                      , x = indicator)
-   # # Export the file
-   # openxlsx::saveWorkbook(wb
-   #                        , here("2025_RF_indicators",
-   #                       "indicators_db.xlsx")
-   #                        , overwrite = TRUE)
-   # Map(function(data, name){ 
-   #   
-   #   openxlsx::addWorksheet(wb, name)
-   #   openxlsx::writeData(wb, name, data)
-   #   
-   # }, list, names(list))
- 
