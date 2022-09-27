@@ -618,25 +618,43 @@ indicators_db <- function(sheet_names) {
   # Formatting integers
   indicator[formatting_integers] <- lapply( indicator[formatting_integers]
                                             , function(x) replace(
-                                              format( round(as.numeric(x), 1)
+                                              format( as.numeric(x)
                                                     , nsmall     = 2
                                                     , big.mark   = ","
                                                     , scientific = FALSE)
                                                                      , is.na(x)
                                                                      , ""
-                                                                     )
-                                                  )
+                                                                  )
+                                          )
     }
 
   if (sheet_names[i] == "data_aggregate") {
 
     indicator <- indicator[!(indicator$indicator %like any% values_delete), ]
 
+    # Formatting integers
+    indicator["value2"] <- indicator["value"]
+
+    indicator$value <- replace(
+                          format(round(as.numeric(indicator$value), 2)
+                                       , nsmall     = 0
+                                       , big.mark   = ","
+                                       , scientific = FALSE)
+                      , is.na(indicator$value)
+                      , ""
+                               )
+
+    indicator$value[indicator$value2 == "n.a."] <- "n.a."
+    indicator$value[indicator$value2 == "n/a"]  <- "n/a"
+
+    indicator["value2"] <- NULL
+
   }
 
   if (sheet_names[i] == "metadata") {
 
-    indicator <- indicator[!(indicator$var_name %like any% values_delete), ] |>                       filter(!(var_name %in% "PCFC")) 
+    indicator <- indicator[!(indicator$var_name %like any% values_delete), ] |>
+      filter(!(var_name %in% "PCFC")) 
 
   }
 
