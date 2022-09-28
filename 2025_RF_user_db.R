@@ -59,14 +59,13 @@
    
  }
  
-# Reading file
+# Reading file, loadworkbook mantains formatting
 
  sheets <- openxlsx::getSheetNames(files)
- db <- lapply(sheets, openxlsx::read.xlsx, xlsxFile = files)
+ db <- lapply(sheets, openxlsx::read.xlsx, xlsxFile = files, detectDates = TRUE)
  names(db) <- sheets
 
 # Pre processing diagnostics
- 
  country <- sort(as.vector(unique(na.omit(db[[1]][["country"]])))
                  ,decreasing = FALSE)
  
@@ -79,6 +78,73 @@
          , paste(sapply(country, paste), "\n"))
  
  Sys.sleep(2)
+ 
+# Columns from ind14 to delete
+ clean_ind14 <- c( "ind_14ia_PA1"
+                  ,"ind_14ia_PA1_percentage_1"
+                  ,"ind_14ia_PA1_allocated"
+                  ,"ind_14ia_PA1_allocated_1"
+                  ,"ind_14ia_PA2"
+                  ,"ind_14ia_PA2_percentage_1"
+                  ,"ind_14ia_PA2_allocated"
+                  ,"ind_14ia_PA2_allocated_1"
+                  ,"ind_14ia_PA3"
+                  ,"ind_14ia_PA3_percentage_1"
+                  ,"ind_14ia_PA3_allocated"
+                  ,"ind_14ia_PA3_allocated_1"
+                  ,"ind_14ia_PA4"
+                  ,"ind_14ia_PA4_percentage_1"
+                  ,"ind_14ia_PA4_allocated"
+                  ,"ind_14ia_PA4_allocated_1"
+                  ,"ind_14ia_PA5"
+                  ,"ind_14ia_PA5_percentage_1"
+                  ,"ind_14ia_PA5_allocated"
+                  ,"ind_14ia_PA5_allocated_1"
+                  ,"ind_14ia_PA6"
+                  ,"ind_14ia_PA6_percentage_1"
+                  ,"ind_14ia_PA6_allocated"
+                  ,"ind_14ia_PA6_allocated_1"
+                  ,"ind_14ia_PA7"
+                  ,"ind_14ia_PA7_percentage_1"
+                  ,"ind_14ia_PA7_allocated"
+                  ,"ind_14ia_PA7_allocated_1"
+                  ,"ind_14ia_PA8"
+                  ,"ind_14ia_PA8_percentage_1"
+                  ,"ind_14ia_PA8_allocated"
+                  ,"ind_14ia_PA8_allocated_1"
+                  ,"ind_14ib_PA1"
+                  ,"ind_14ib_PA1_percentage_met"
+                  ,"ind_14ib_PA1_allocated"
+                  ,"ind_14ib_PA1_allocated_met"
+                  ,"ind_14ib_PA2"
+                  ,"ind_14ib_PA2_percentage_met"
+                  ,"ind_14ib_PA2_allocated"
+                  ,"ind_14ib_PA2_allocated_met"
+                  ,"ind_14ib_PA3"
+                  ,"ind_14ib_PA3_percentage_met"
+                  ,"ind_14ib_PA3_allocated"
+                  ,"ind_14ib_PA3_allocated_met"
+                  ,"ind_14ib_PA4"
+                  ,"ind_14ib_PA4_percentage_met"
+                  ,"ind_14ib_PA4_allocated"
+                  ,"ind_14ib_PA4_allocated_met"
+                  ,"ind_14ib_PA5"
+                  ,"ind_14ib_PA5_percentage_met"
+                  ,"ind_14ib_PA5_allocated"
+                  ,"ind_14ib_PA5_allocated_met"
+                  ,"ind_14ib_PA6"
+                  ,"ind_14ib_PA6_percentage_met"
+                  ,"ind_14ib_PA6_allocated"
+                  ,"ind_14ib_PA6_allocated_met"
+                  ,"ind_14ib_PA7"
+                  ,"ind_14ib_PA7_percentage_met"
+                  ,"ind_14ib_PA7_allocated"
+                  ,"ind_14ib_PA7_allocated_met"
+                  ,"ind_14ib_PA8"
+                  ,"ind_14ib_PA8_percentage_met"
+                  ,"ind_14ib_PA8_allocated"
+                  ,"ind_14ib_PA8_allocated_met"
+                  )
  
 # Parallel Processing set-up
  plan(multisession)
@@ -118,20 +184,26 @@ users_db <- function(country) {
      # Clean data
       #Delete unnecessary columns specific for data_country
         DF[[1]] <- DF[[1]] |> 
-           dplyr::select(!c("iso", "region", "income_group", "pcfc"))
+           dplyr::select(!c("iso", "region", "income_group", "pcfc")) |>
+           dplyr::select(!ends_with("_m")) |>
+           dplyr::select(!num_range(prefix = "_wq", range = 2:4))
+        
+      #Delete unnecessary columns of ind_14
+        DF[[1]] <- DF[[1]] |> 
+           dplyr::select(!any_of(clean_ind14))
 
       #Delete unnecessary and empty columns, ALL sheets
        vect <- seq(1,3)
        clean_func <- function(x) {
-          DF[[x]] <- DF[[x]] |> 
-           select(!c("id", "data_update")) |> 
+          DF[[x]] <- DF[[x]] |>
+           select(!c("id", "data_update")) |>
            remove_empty(which = c("cols"), quiet = TRUE) 
        }
 
        DF <- lapply(vect, clean_func)
 
       #Delete duplicates in metadata
-       DF[[3]] <- DF[[3]] |> 
+       DF[[3]] <- DF[[3]] |>
            select(!c("ind_year")) |>
            dplyr::distinct()
          
@@ -190,7 +262,7 @@ users_db <- function(country) {
     # Add databases to index sheet (inefficient code as appending workbook objects not possible ATM)
        
        lapply(names(wb), function(s) {
-         dt <- openxlsx::read.xlsx(temp, sheet = s)
+         dt <- openxlsx::read.xlsx(temp, sheet = s, detectDates = TRUE)
          openxlsx::addWorksheet(wb2 , sheetName = s)
          openxlsx::writeData(wb2, s, dt)
        })
