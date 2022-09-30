@@ -384,7 +384,7 @@
   }
   
   # Indicators that need 2b formatted to comma separated thousands, 2 digit
-  formatting_integers <- c("ind_14ia_PA1_percentage_1"
+  formatting_integers <- c( "ind_14ia_PA1_percentage_1"
                            ,"ind_14ia_PA1_allocated"
                            ,"ind_14ia_PA1_allocated_1"
                            ,"ind_14ia_PA2_percentage_1"
@@ -537,8 +537,8 @@
     format   = ":spin [:bar] :percent in :elapsed ETA: :eta",
     width    = 60,
     complete = "+"
-  )
-  )
+                           )
+          )
   
 ## Extract by sheet and merge --------------------------------------------------
 
@@ -606,7 +606,7 @@ indicators_db <- function(sheet_names) {
       dplyr::relocate(  "data_year"
                         , .before = "data_update")
 
-  # Formatting dates
+  #Formatting dates
   indicator[(formatting_date)] <- lapply(indicator[(formatting_date)]
                                         , openxlsx::convertToDate
                                         , optional = TRUE
@@ -615,7 +615,7 @@ indicators_db <- function(sheet_names) {
 
   indicator[is.na(formatting_date)] <- ""
 
-  # Formatting integers
+  #Formatting integers
   indicator[formatting_integers] <- lapply( indicator[formatting_integers]
                                             , function(x) replace(
                                               format( as.numeric(x)
@@ -626,13 +626,26 @@ indicators_db <- function(sheet_names) {
                                                                      , ""
                                                                   )
                                           )
+  indicator$grant_amount <- replace( format( as.numeric(indicator$grant_amount)
+                                              , nsmall     = 0
+                                              , big.mark   = ","
+                                              , scientific = FALSE)
+                                    , is.na(indicator$grant_amount)
+                                    , ""
+                                   )
+  indicator <- indicator |> 
+              rename(
+                any_of(
+                  4i_increase_or_maintained = "X4i_increase_or_maintained"
+                      )
+                    )
     }
 
   if (sheet_names[i] == "data_aggregate") {
 
     indicator <- indicator[!(indicator$indicator %like any% values_delete), ]
 
-    # Formatting integers
+    #Formatting integers
     indicator["value2"] <- indicator["value"]
 
     indicator$value <- replace(
@@ -643,7 +656,7 @@ indicators_db <- function(sheet_names) {
                       , is.na(indicator$value)
                       , ""
                                )
-
+    #Formatting different text values in an integer column
     indicator$value[indicator$value2 == "n.a."] <- "n.a."
     indicator$value[indicator$value2 == "n/a"]  <- "n/a"
 
@@ -677,20 +690,23 @@ indicators_db <- function(sheet_names) {
 
   }, future.seed  = NULL #Ignore random numbers warning
   )
-
+ 
+  # Save as one excel file with named sheets
   names(db) <- sheet_names
 
   openxlsx::write.xlsx( db
                       , here("2025_RF_indicators",
-                              paste("indicators_db-V0.9.xlsx", sep = "_"))
+                              paste("indicators_db-V0.95.xlsx", sep = "_"))
                       , sheetName = names(db)
                       , colNames  = TRUE
-  )
+                      # , colWidths = "auto"
+                      )
 
   # Listing indicators in the database
   ind_final <- sort(as.vector(unique(db[[1]][["ind_id"]])))
-  message(paste("The processed indicators are:","\n") 
-          , paste(sapply(ind_final, paste), "\n"))
+
+  message( paste("The processed indicators are:", "\n") 
+         , paste(sapply(ind_final, paste), "\n"))
 
   rm(db)
   }
