@@ -168,7 +168,8 @@ users_db <- function(country) {
      # Subset A: by country, data_country sheet
        DF <- db
 
-       DF[[1]] <- db[[1]][db[[1]][["country"]] %in% country[i],]
+       DF[[1]] <- db[[1]][db[[1]][["country"]] %in% country[i],] |>
+                  janitor::remove_empty(which = c("cols"), quiet = TRUE)
 
        subset_ind <- DF[[1]][["id"]]
 
@@ -184,7 +185,7 @@ users_db <- function(country) {
      # Clean data
       #Delete unnecessary columns specific for data_country
         DF[[1]] <- DF[[1]] |> 
-           dplyr::select(!c("iso", "region", "income_group", "pcfc")) |>
+           dplyr::select(!any_of(c("iso", "region", "income_group", "pcfc"))) |>
            dplyr::select(!ends_with("_m")) |>
            dplyr::select(!num_range(prefix = "_wq", range = 2:4))
         
@@ -196,8 +197,9 @@ users_db <- function(country) {
        vect <- seq(1,3)
        clean_func <- function(x) {
           DF[[x]] <- DF[[x]] |>
-           select(!c("id", "data_update")) |>
-           remove_empty(which = c("cols"), quiet = TRUE) 
+           select(!c("id", "data_update")) 
+          # |>
+          #  remove_empty(which = c("cols"), quiet = TRUE) 
        }
 
        DF <- lapply(vect, clean_func)
@@ -214,7 +216,9 @@ users_db <- function(country) {
        #                ,names_from  = ind_year
        #                ,values_from = DF[!c(ind_id, ind_year)]
        #   )
-      
+       n_rows_1 <- length(DF[[1]][["n"]])
+       n_rows_2 <- length(DF[[2]][["country"]])
+       
      # Create workbook
        wb <- openxlsx::createWorkbook()
        
@@ -234,30 +238,31 @@ users_db <- function(country) {
        wb2 <- openxlsx::loadWorkbook(here("2025_RF_indicators"
                                           ,"index.xlsx"))
 
-     # Write country name in index sheet, in cell (G,7)
-       openxlsx::writeData(    wb    =  wb2
-                             , sheet = "index"
-                             , x     = country[i]
-                             , xy    = c(7,7)
-       )
+     # Write country name in index sheet, in cell (C,7)
+       openxlsx::writeData( wb    =  wb2
+                          , sheet = "index"
+                          , x     = country[i]
+                          , xy    = c(3,7)
+                          )
 
      # Insert GPE image
-       openxlsx::insertImage(  wb2
-                             , sheet = "index"
-                             , file  = here("2025_RF_indicators"
-                                            , "GPE.PNG")
-                             , width = 2
-                             , height = 0.5
-                             , startRow = 2
-                             , startCol = 2
-                             , units = "in"
-                             , dpi = 300
-                           )
+       openxlsx::insertImage( wb2
+                            , sheet = "index"
+                            , file  = here("2025_RF_indicators"
+                                          , "GPE.PNG")
+                            , width = 2
+                            , height = 0.5
+                            , startRow = 1
+                            , startCol = 1
+                            , units = "in"
+                            , dpi = 300
+                            )
 
-    # Set worksheet gridlines to hide
-       openxlsx::showGridLines(  wb            = wb2
-                               , sheet         = "index"
-                               , showGridLines = FALSE)
+     # Set worksheet gridlines to hide
+       openxlsx::showGridLines( wb            = wb2
+                              , sheet         = "index"
+                              , showGridLines = FALSE
+                              )
 
     # Add databases to index sheet (inefficient code as appending workbook objects not possible ATM)
        
@@ -267,16 +272,35 @@ users_db <- function(country) {
          openxlsx::writeData(wb2, s, dt)
        })
        
-       names(wb2) <- c(  "index"
-                       , "data_country"
-                       , "data_aggregate"
-                       , "metadata")
+       names(wb2) <- c( "index"
+                      , "data_country"
+                      , "data_aggregate"
+                      , "metadata"
+                      )
+
+       # Numeric formatting
+       options("openxlsx.numFmt" = "0.00") # 2 decimal cases formatting
+
+       numeric_style_1 <- createStyle(numFmt = "#,##0")
+       addStyle( wb2, 1, style = numeric_style_1
+                       , rows = 2:n_rows_1
+                       , cols = 3:16
+                       , gridExpand = TRUE
+               )
+
+       numeric_style_2 <- createStyle(numFmt = "#,#0.00") 
+       addStyle( wb2, 2, style = numeric_style_2
+                       , rows = 2:n_rows_2
+                       , cols = 6:7
+                       , gridExpand = TRUE
+               )
 
      # Saving workbook by country
-       openxlsx::saveWorkbook(  wb = wb2
-                              , here("2025_RF_indicators/Countries_db"
-                              , paste0(country[i],".xlsx"))
-                              , overwrite = TRUE)
+       openxlsx::saveWorkbook( wb = wb2
+                             , here("2025_RF_indicators/Countries_db"
+                             , paste0(country[i],".xlsx"))
+                             , overwrite = TRUE
+                             )
       
     # Signaling progression updates
       p(paste("Processing country", country[i], Sys.time(), "\t"))
