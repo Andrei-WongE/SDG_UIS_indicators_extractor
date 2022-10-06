@@ -65,12 +65,58 @@
  db <- lapply(sheets, openxlsx::read.xlsx, xlsxFile = files, detectDates = TRUE)
  names(db) <- sheets
 
+# Creating country/entities pairs
+ country_pairs <-  data.frame( stringsAsFactors = FALSE
+                             ,country = c( "Pakistan"
+                                          ,"Pakistan"
+                                          ,"Pakistan"
+                                          ,"Pakistan"
+                                          ,"Somalia"
+                                          ,"Somalia"
+                                          ,"Somalia"
+                                          ,"Tanzania"
+                                          ,"Tanzania"
+                                        )
+                             ,entity = c( "Balochistan"
+                                         ,"Khyber Pakhtoonkhwa"
+                                         ,"Punjab"
+                                         ,"Sindh"
+                                         ,"Federal"
+                                         ,"Puntland"
+                                         ,"Somaliland"
+                                         ,"Mainland"
+                                         ,"Zanzibar"
+                                        )
+                            )
+
+ pair_function <- function(country_name, entity_name) {
+
+   temp <- db[[1]][db[[1]][["country"]] %in% country_name, ]
+   temp <- temp[temp$entity %in% c(entity_name, NA), ]
+   temp$country <- paste(country_name, entity_name, sep = "-")
+
+   return(temp)
+ }
+ 
+ result_list <- mapply( pair_function
+                      , country_pairs$country
+                      , country_pairs$entity
+                      , SIMPLIFY = FALSE
+                      , USE.NAMES = FALSE)
+ 
+ result_data_frame <- do.call(rbind, result_list)
+ db[["data_country"]] <- rbind(db[["data_country"]], result_data_frame)
+ 
+ rm(result, total_result)
+
 # Pre processing diagnostics
  country <- sort(as.vector(unique(na.omit(db[[1]][["country"]])))
                  ,decreasing = FALSE)
  
- message("The number of countries in the data set is "
-         , paste(length(country)))
+ message( "The number of countries and country/entities pairs in"
+         ," "
+         ,"the data set is: "
+         ,paste(length(country),"\n"))
  
  Sys.sleep(1)
  
@@ -216,9 +262,13 @@ users_db <- function(country) {
        #                ,names_from  = ind_year
        #                ,values_from = DF[!c(ind_id, ind_year)]
        #   )
-       n_rows_1 <- length(DF[[1]][["n"]])
-       n_rows_2 <- length(DF[[2]][["country"]])
-       
+       n_rows_1 <- nrow(DF[[1]])
+       n_rows_2 <- nrow(DF[[2]])
+       #Considering sheet +1 due to index sheet inserted later on
+       n_cols_2 <- ncol(DF[[1]])
+       n_cols_3 <- ncol(DF[[2]])
+       n_cols_4 <- ncol(DF[[3]])
+
      # Create workbook
        wb <- openxlsx::createWorkbook()
        
@@ -258,12 +308,6 @@ users_db <- function(country) {
                             , dpi = 300
                             )
 
-     # Set worksheet gridlines to hide
-       openxlsx::showGridLines( wb            = wb2
-                              , sheet         = "index"
-                              , showGridLines = FALSE
-                              )
-
     # Add databases to index sheet (inefficient code as appending workbook objects not possible ATM)
        
        lapply(names(wb), function(s) {
@@ -278,22 +322,46 @@ users_db <- function(country) {
                       , "metadata"
                       )
 
-       # Numeric formatting
-       options("openxlsx.numFmt" = "0.00") # 2 decimal cases formatting
+     # Formatting 
+       #Set worksheet gridlines to hide
+        openxlsx::showGridLines( wb            = wb2
+                               , sheet         = "index"
+                               , showGridLines = FALSE
+                               )
 
-       numeric_style_1 <- createStyle(numFmt = "#,##0")
-       addStyle( wb2, 1, style = numeric_style_1
-                       , rows = 2:n_rows_1
-                       , cols = 3:16
-                       , gridExpand = TRUE
-               )
+        #Numeric formatting
+        options("openxlsx.numFmt" = "0.00") # 2 decimal cases formatting
+  
+        # numeric_style_1 <- createStyle(numFmt = "#,##0")
+        # addStyle( wb2, 2, style = numeric_style_1
+        #                 , rows = 2:n_rows_1
+        #                 , cols = 3:16
+        #                 , gridExpand = TRUE
+        #         )
+  
+        numeric_style_2 <- createStyle(numFmt = "#,#0.00") 
+        addStyle( wb2, 2, style = numeric_style_2
+                        , rows  = 2:n_rows_2
+                        , cols  = 6:7
+                        , gridExpand = TRUE
+                )
+  
+        #Header formatting sheets 2 to 4: black border + bold header
+        header_style <- createStyle( halign = "CENTER"
+                                    ,valign = "CENTER"
+                                    ,border = "TopBottomLeftRight"
+                                    ,borderColour = "black"
+                                    # ,wrapText = TRUE
+                                   )
 
-       numeric_style_2 <- createStyle(numFmt = "#,#0.00") 
-       addStyle( wb2, 2, style = numeric_style_2
-                       , rows = 2:n_rows_2
-                       , cols = 6:7
-                       , gridExpand = TRUE
-               )
+        for (x in 2:4) {
+
+          end_column <- get(paste0("n_cols_", x))
+          addStyle(wb2, x, style = header_style 
+                   , rows  = 1
+                   , cols  = 1:end_column
+                   , gridExpand = TRUE)
+        }
 
      # Saving workbook by country
        openxlsx::saveWorkbook( wb = wb2
@@ -301,7 +369,7 @@ users_db <- function(country) {
                              , paste0(country[i],".xlsx"))
                              , overwrite = TRUE
                              )
-      
+
     # Signaling progression updates
       p(paste("Processing country", country[i], Sys.time(), "\t"))
 
