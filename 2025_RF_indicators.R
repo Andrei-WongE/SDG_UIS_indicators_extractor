@@ -384,139 +384,123 @@
   }
   
   # Indicators that need 2b formatted to comma separated thousands, 2 digit
-  formatting_integers <- c( "ind_14ia_PA1_percentage_1"
-                           ,"ind_14ia_PA1_allocated"
-                           ,"ind_14ia_PA1_allocated_1"
-                           ,"ind_14ia_PA2_percentage_1"
-                           ,"ind_14ia_PA2_allocated"
-                           ,"ind_14ia_PA2_allocated_1"
-                           ,"ind_14ia_PA3_percentage_1"
-                           ,"ind_14ia_PA3_allocated"
-                           ,"ind_14ia_PA3_allocated_1"
-                           ,"ind_14ia_PA4_percentage_1"
-                           ,"ind_14ia_PA4_allocated"
-                           ,"ind_14ia_PA4_allocated_1"
-                           ,"ind_14ia_PA5_percentage_1"
-                           ,"ind_14ia_PA5_allocated"
-                           ,"ind_14ia_PA5_allocated_1"
-                           ,"ind_14ia_PA6_percentage_1"
-                           ,"ind_14ia_PA6_allocated"
-                           ,"ind_14ia_PA6_allocated_1"
-                           ,"ind_14ia_PA7_percentage_1"
-                           ,"ind_14ia_PA7_allocated"
-                           ,"ind_14ia_PA7_allocated_1"
-                           ,"ind_14ia_PA8_percentage_1"
-                           ,"ind_14ia_PA8_allocated"
-                           ,"ind_14ia_PA8_allocated_1"
-                           ,"ind_14ib_PA1_percentage_met"
-                           ,"ind_14ib_PA1_allocated"
-                           ,"ind_14ib_PA1_allocated_met"
-                           ,"ind_14ib_PA2_percentage_met"
-                           ,"ind_14ib_PA2_allocated"
-                           ,"ind_14ib_PA2_allocated_met"
-                           ,"ind_14ib_PA3_percentage_met"
-                           ,"ind_14ib_PA3_allocated"
-                           ,"ind_14ib_PA3_allocated_met"
-                           ,"ind_14ib_PA4_percentage_met"
-                           ,"ind_14ib_PA4_allocated"
-                           ,"ind_14ib_PA4_allocated_met"
-                           ,"ind_14ib_PA5_percentage_met"
-                           ,"ind_14ib_PA5_allocated"
-                           ,"ind_14ib_PA5_allocated_met"
-                           ,"ind_14ib_PA6_percentage_met"
-                           ,"ind_14ib_PA6_allocated"
-                           ,"ind_14ib_PA6_allocated_met"
-                           ,"ind_14ib_PA7_percentage_met"
-                           ,"ind_14ib_PA7_allocated"
-                           ,"ind_14ib_PA7_allocated_met"
-                           ,"ind_14ib_PA8_percentage_met"
-                           ,"ind_14ib_PA8_allocated"
-                           ,"ind_14ib_PA8_allocated_met"
-                           ,"pledged_amount_local_currency"
-                           ,"pledged_amount_USD"
-                           ,"pledge_fulfillment_local_currency"
-                           ,"pledge_fulfillment_USD"
-                           ,"pledge_fulfillment_percentage"
-                           ,"indi_2"
-                           ,"indi_2_f"
-                           ,"indi_2_m"
-                           ,"indi_3ia"
-                           ,"indi_3ia_f"
-                           ,"indi_3ia_m"
-                           ,"indi_3ib"
-                           ,"indi_3ib_f"
-                           ,"indi_3ib_m"
-                           ,"indi_3iia"
-                           ,"indi_3iia_f"
-                           ,"indi_3iia_m"
-                           ,"indi_3iia_wq1"
-                           ,"indi_3iia_wq2"
-                           ,"indi_3iia_wq3"
-                           ,"indi_3iia_wq4"
-                           ,"indi_3iia_wq5"
-                           ,"indi_3iia_rural"
-                           ,"indi_3iia_urban"
-                           ,"indi_3iib"
-                           ,"indi_3iib_f"
-                           ,"indi_3iib_m"
-                           ,"indi_3iib_wq1"
-                           ,"indi_3iib_wq2"
-                           ,"indi_3iib_wq3"
-                           ,"indi_3iib_wq4"
-                           ,"indi_3iib_wq5"
-                           ,"indi_3iib_rural"
-                           ,"indi_3iib_urban"
-                           ,"indi_3iic"
-                           ,"indi_3iic_f"
-                           ,"indi_3iic_m"
-                           ,"indi_3iic_wq1"
-                           ,"indi_3iic_wq2"
-                           ,"indi_3iic_wq3"
-                           ,"indi_3iic_wq4"
-                           ,"indi_3iic_wq5"
-                           ,"indi_3iic_rural"
-                           ,"indi_3iic_urban"
-                           ,"base_education_share"
-                           ,"current_education_share"
-                           ,"indi_5i_pop"
-                           ,"indi_6a1"
-                           ,"indi_6a1_f"
-                           ,"indi_6a1_m"
-                           ,"indi_6a2"
-                           ,"indi_6a2_f"
-                           ,"indi_6a2_m"
-                           ,"indi_6b1"
-                           ,"indi_6b1_f"
-                           ,"indi_6b1_m"
-                           ,"indi_6b2"
-                           ,"indi_6b2_f"
-                           ,"indi_6b2_m"
-                           ,"indi_6c1"
-                           ,"indi_6c1_f"
-                           ,"indi_6c1_m"
-                           ,"indi_6c2"
-                           ,"indi_6c2_f"
-                           ,"indi_6c2_m"
-                           ,"indi_7ia"
-                           ,"indi_7ia_f"
-                           ,"indi_7ia_m"
-                           ,"indi_7ib"
-                           ,"indi_7ib_f"
-                           ,"indi_7ib_m"
-                           ,"indi_7ic"
-                           ,"indi_7ic_f"
-                           ,"indi_7ic_m"
-                           ,"indi_7id"
-                           ,"indi_7id_f"
-                           ,"indi_7id_m"
-                           )
-
+  formatting_integers <- c("ind_14ia_PA1_allocated"
+                          ,"ind_14ia_PA1_allocated_1"
+                          ,"ind_14ia_PA2_allocated"
+                          ,"ind_14ia_PA2_allocated_1"
+                          ,"ind_14ia_PA3_allocated"
+                          ,"ind_14ia_PA3_allocated_1"
+                          ,"ind_14ia_PA4_allocated"
+                          ,"ind_14ia_PA4_allocated_1"
+                          ,"ind_14ia_PA5_allocated"
+                          ,"ind_14ia_PA5_allocated_1"
+                          ,"ind_14ia_PA6_allocated"
+                          ,"ind_14ia_PA6_allocated_1"
+                          ,"ind_14ia_PA7_allocated"
+                          ,"ind_14ia_PA7_allocated_1"
+                          ,"ind_14ia_PA8_allocated"
+                          ,"ind_14ia_PA8_allocated_1"
+                          ,"ind_14ib_PA1_allocated"
+                          ,"ind_14ib_PA1_allocated_met"
+                          ,"ind_14ib_PA3_allocated"
+                          ,"ind_14ib_PA3_allocated_met"
+                          ,"ind_14ib_PA4_allocated"
+                          ,"ind_14ib_PA4_allocated_met"
+                          ,"ind_14ib_PA5_allocated"
+                          ,"ind_14ib_PA5_allocated_met"
+                          ,"ind_14ib_PA6_allocated"
+                          ,"ind_14ib_PA6_allocated_met"
+                          ,"ind_14ib_PA7_allocated"
+                          ,"ind_14ib_PA7_allocated_met"
+                          ,"ind_14ib_PA8_allocated"
+                          ,"ind_14ib_PA8_allocated_met"
+                          ,"pledged_amount_local_currency"
+                          ,"pledged_amount_USD"
+                          ,"pledge_fulfillment_local_currency"
+                          ,"pledge_fulfillment_USD"
+                          ,"pledge_fulfillment_percentage"
+                          ,"indi_2"
+                          ,"indi_2_f"
+                          ,"indi_2_pop"
+                          ,"indi_2_f_pop"
+                          ,"indi_3ia"
+                          ,"indi_3ia_f"
+                          ,"indi_3ib"
+                          ,"indi_3ib_f"
+                          ,"indi_3ia_pop"
+                          ,"indi_3ia_f_pop"
+                          ,"indi_3ib_pop"
+                          ,"indi_3ib_f_pop"
+                          ,"indi_3iia"
+                          ,"indi_3iia_f"
+                          ,"indi_3iia_q1"
+                          ,"indi_3iia_q2"
+                          ,"indi_3iia_q3"
+                          ,"indi_3iia_q4"
+                          ,"indi_3iia_q5"
+                          ,"indi_3iia_rural"
+                          ,"indi_3iia_urban"
+                          ,"indi_3iia_pop"
+                          ,"indi_3iia_f_pop"
+                          ,"indi_3iib"
+                          ,"indi_3iib_f"
+                          ,"indi_3iib_q1"
+                          ,"indi_3iib_q2"
+                          ,"indi_3iib_q3"
+                          ,"indi_3iib_q4"
+                          ,"indi_3iib_q5"
+                          ,"indi_3iib_rural"
+                          ,"indi_3iib_urban"
+                          ,"indi_3iib_pop"
+                          ,"indi_3iib_f_pop"
+                          ,"indi_3iic"
+                          ,"indi_3iic_f"
+                          ,"indi_3iic_q1"
+                          ,"indi_3iic_q2"
+                          ,"indi_3iic_q3"
+                          ,"indi_3iic_q4"
+                          ,"indi_3iic_q5"
+                          ,"indi_3iic_rural"
+                          ,"indi_3iic_urban"
+                          ,"indi_3iic_pop"
+                          ,"indi_3iic_f_pop"
+                          ,"base_education_share"
+                          ,"current_education_share"
+                          ,"indi_5i"
+                          ,"indi_5i_pop"
+                          ,"indi_6aii"
+                          ,"indi_6aii_f"
+                          ,"indi_6cii"
+                          ,"indi_6cii_f"
+                          ,"indi_6bii"
+                          ,"indi_6bii_f"
+                          ,"indi_6ai"
+                          ,"indi_6ai_f"
+                          ,"indi_6ci"
+                          ,"indi_6ci_f"
+                          ,"indi_6bi"
+                          ,"indi_6bi_f"
+                          ,"indi_6_primarypop"
+                          ,"indi_6_f_primarypop"
+                          ,"indi_6_lsecondarypop"
+                          ,"indi_6_f_lsecondarypop"
+                          ,"indi_7i_primarypop"
+                          ,"indi_7i_f_primarypop"
+                          ,"indi_7ia"
+                          ,"indi_7ia_f"
+                          ,"indi_7ib"
+                          ,"indi_7ib_f"
+                          ,"indi_7ic"
+                          ,"indi_7ic_f"
+                          ,"indi_7id"
+                          ,"indi_7id_f"
+                          )
 
   # Indicators that need 2b formatted from excel dates to date
    formatting_date <- c("grant_start_date"
                        ,"grant_report_submission_date"
                        ,"grant_closing_date"
-                       ,"EOI.approval.date"
+                       ,"EOI_approval_date"
                        )
 
   # Get Date Origin for data conversion
@@ -590,9 +574,9 @@ indicators_db <- function(sheet_names) {
                          , extra = "warn") 
 
   indicator <- indicator %>%
-              select(!file_path) %>%
-              mutate(data_update = format(Sys.Date())) %>%
-              dplyr::relocate(c("id", "ind_id", "ind_year"))
+               select(!file_path) %>%
+               mutate(data_update = format(Sys.Date())) %>%
+               dplyr::relocate(c("id", "ind_id", "ind_year"))
 
   # Cleaning database and order variables
   values_delete <- c("Technical%", "Notes%") # Thanks DescTools!
@@ -600,11 +584,12 @@ indicators_db <- function(sheet_names) {
   if (sheet_names[i] == "data_country") {
 
     indicator <- indicator |> 
-      dplyr::relocate(  "entity"
-                      , .after = "country"
-                     ) |> 
-      dplyr::relocate(  "data_year"
-                        , .before = "data_update")
+                 dplyr::relocate( "entity"
+                                , .after = "country"
+                                ) |>
+                 dplyr::relocate( "data_year"
+                                , .before = "data_update"
+                                )
 
   #Formatting dates
   indicator[(formatting_date)] <- lapply(indicator[(formatting_date)]
@@ -626,6 +611,15 @@ indicators_db <- function(sheet_names) {
                                                                      , ""
                                                                   )
                                           )
+
+  indicator$indi_1_pop <- replace( format( as.numeric(indicator$indi_1_pop)
+                                             , nsmall     = 0
+                                             , big.mark   = ","
+                                             , scientific = FALSE)
+                                     , is.na(indicator$indi_1_pop)
+                                     , ""
+  )
+
   indicator$grant_amount <- replace( format( as.numeric(indicator$grant_amount)
                                               , nsmall     = 0
                                               , big.mark   = ","
@@ -633,12 +627,11 @@ indicators_db <- function(sheet_names) {
                                     , is.na(indicator$grant_amount)
                                     , ""
                                    )
-  indicator <- indicator |> 
-              rename(
-                any_of(
-                  4i_increase_or_maintained = "X4i_increase_or_maintained"
-                      )
-                    )
+
+  #Due to check.names = TRUE, X in front of colnames start with number
+  # names(indicator)[names(indicator) == 
+  #                 `4i_increase_or_maintained`] <- "X4i_increase_or_maintained"
+
     }
 
   if (sheet_names[i] == "data_aggregate") {
@@ -655,7 +648,8 @@ indicators_db <- function(sheet_names) {
                                        , scientific = FALSE)
                       , is.na(indicator$value)
                       , ""
-                               )
+                              )
+
     #Formatting different text values in an integer column
     indicator$value[indicator$value2 == "n.a."] <- "n.a."
     indicator$value[indicator$value2 == "n/a"]  <- "n/a"
@@ -694,11 +688,25 @@ indicators_db <- function(sheet_names) {
   # Save as one excel file with named sheets
   names(db) <- sheet_names
 
+  # Creating header
+  # for (i in 1:3) {
+  #   janitor::row_to_names(db[[i]][[i]]
+  #                        ,row_number = 1
+  #                        ,remove_row = TRUE
+  #                        )
+  # 
+  #   janitor::clean_names(db[[i]])
+  # }
+
+  #Numeric formatting
+  options("openxlsx.numFmt" = "0.00") # 2 decimal cases formatting
+
+  #Saving file
   openxlsx::write.xlsx( db
                       , here("2025_RF_indicators",
                               paste("indicators_db-V0.95.xlsx", sep = "_"))
                       , sheetName = names(db)
-                      , colNames  = TRUE
+                      , colNames  = FALSE #To avoid having green flags in excel
                       # , colWidths = "auto"
                       )
 
