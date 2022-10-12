@@ -107,7 +107,7 @@
  result_data_frame <- do.call(rbind, result_list)
  db[["data_country"]] <- rbind(db[["data_country"]], result_data_frame)
  
- rm(result, total_result)
+ rm(result_list, result_data_frame)
 
 # Pre processing diagnostics
  country <- sort(as.vector(unique(na.omit(db[[1]][["country"]])))
