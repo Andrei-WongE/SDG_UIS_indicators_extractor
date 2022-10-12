@@ -29,7 +29,7 @@
     install.packages("pacman")
   }
   pacman::p_load(here, dplyr, tidyverse, DescTools, openxlsx, fs, future.apply,
-                 progressr, utils)
+                 progressr, utils, janitor)
 
 ## Runs the following --------
 
@@ -384,36 +384,44 @@
   }
   
   # Indicators that need 2b formatted to comma separated thousands, 2 digit
-  formatting_integers <- c("ind_14ia_PA1_allocated"
+   formatting_integers <- c("ind_14ia_PA1_percentage_1"
+                          ,"ind_14ia_PA1_allocated"
                           ,"ind_14ia_PA1_allocated_1"
+                          ,"ind_14ia_PA2_percentage_1"
                           ,"ind_14ia_PA2_allocated"
                           ,"ind_14ia_PA2_allocated_1"
+                          ,"ind_14ia_PA3_percentage_1"
                           ,"ind_14ia_PA3_allocated"
                           ,"ind_14ia_PA3_allocated_1"
+                          ,"ind_14ia_PA4_percentage_1"
                           ,"ind_14ia_PA4_allocated"
                           ,"ind_14ia_PA4_allocated_1"
+                          ,"ind_14ia_PA5_percentage_1"
                           ,"ind_14ia_PA5_allocated"
                           ,"ind_14ia_PA5_allocated_1"
+                          ,"ind_14ia_PA6_percentage_1"
                           ,"ind_14ia_PA6_allocated"
                           ,"ind_14ia_PA6_allocated_1"
+                          ,"ind_14ia_PA7_percentage_1"
                           ,"ind_14ia_PA7_allocated"
                           ,"ind_14ia_PA7_allocated_1"
+                          ,"ind_14ia_PA8_percentage_1"
                           ,"ind_14ia_PA8_allocated"
                           ,"ind_14ia_PA8_allocated_1"
-                          ,"ind_14ib_PA1_allocated"
-                          ,"ind_14ib_PA1_allocated_met"
-                          ,"ind_14ib_PA3_allocated"
-                          ,"ind_14ib_PA3_allocated_met"
-                          ,"ind_14ib_PA4_allocated"
-                          ,"ind_14ib_PA4_allocated_met"
-                          ,"ind_14ib_PA5_allocated"
-                          ,"ind_14ib_PA5_allocated_met"
-                          ,"ind_14ib_PA6_allocated"
-                          ,"ind_14ib_PA6_allocated_met"
-                          ,"ind_14ib_PA7_allocated"
-                          ,"ind_14ib_PA7_allocated_met"
-                          ,"ind_14ib_PA8_allocated"
-                          ,"ind_14ib_PA8_allocated_met"
+                          # ,"ind_14ib_PA1_allocated"
+                          # ,"ind_14ib_PA1_allocated_met"
+                          # ,"ind_14ib_PA3_allocated"
+                          # ,"ind_14ib_PA3_allocated_met"
+                          # ,"ind_14ib_PA4_allocated"
+                          # ,"ind_14ib_PA4_allocated_met"
+                          # ,"ind_14ib_PA5_allocated"
+                          # ,"ind_14ib_PA5_allocated_met"
+                          # ,"ind_14ib_PA6_allocated"
+                          # ,"ind_14ib_PA6_allocated_met"
+                          # ,"ind_14ib_PA7_allocated"
+                          # ,"ind_14ib_PA7_allocated_met"
+                          # ,"ind_14ib_PA8_allocated"
+                          # ,"ind_14ib_PA8_allocated_met"
                           ,"pledged_amount_local_currency"
                           ,"pledged_amount_USD"
                           ,"pledge_fulfillment_local_currency"
@@ -690,12 +698,12 @@ indicators_db <- function(sheet_names) {
 
   # Creating header
   # for (i in 1:3) {
-  #   janitor::row_to_names(db[[i]][[i]]
-  #                        ,row_number = 1
-  #                        ,remove_row = TRUE
-  #                        )
+  #   names(db[[i]][[i]]) <- db[[i]][[i]] %>% 
+  #                          slice(1) %>% 
+  #                          janitor::make_clean_names()
   # 
-  #   janitor::clean_names(db[[i]])
+  #   db[[i]][[i]] %>% slice(-1)
+  # 
   # }
 
   #Numeric formatting
@@ -704,9 +712,9 @@ indicators_db <- function(sheet_names) {
   #Saving file
   openxlsx::write.xlsx( db
                       , here("2025_RF_indicators",
-                              paste("indicators_db-V0.95.xlsx", sep = "_"))
+                              paste("indicators_db-V0.97.xlsx", sep = "_"))
                       , sheetName = names(db)
-                      , colNames  = FALSE #To avoid having green flags in excel
+                      , colNames  = TRUE #To avoid having green flags in excel
                       # , colWidths = "auto"
                       )
 
