@@ -429,8 +429,8 @@
                           ,"pledge_fulfillment_percentage"
                           ,"indi_2"
                           ,"indi_2_f"
-                          ,"indi_2_pop"
-                          ,"indi_2_f_pop"
+                          # ,"indi_2_pop"
+                          # ,"indi_2_f_pop"
                           ,"indi_3ia"
                           ,"indi_3ia_f"
                           ,"indi_3ib"
@@ -503,6 +503,12 @@
                           ,"indi_7id"
                           ,"indi_7id_f"
                           )
+
+   formatting_integers_round <- c( "indi_1_pop"
+                                  ,"grant_amount"
+                                  ,"indi_2_pop"
+                                  ,"indi_2_f_pop"
+                                 )
 
   # Indicators that need 2b formatted from excel dates to date
    formatting_date <- c("grant_start_date"
@@ -620,21 +626,17 @@ indicators_db <- function(sheet_names) {
                                                                   )
                                           )
 
-  indicator$indi_1_pop <- replace( format( as.numeric(indicator$indi_1_pop)
-                                             , nsmall     = 0
-                                             , big.mark   = ","
-                                             , scientific = FALSE)
-                                     , is.na(indicator$indi_1_pop)
-                                     , ""
-  )
-
-  indicator$grant_amount <- replace( format( as.numeric(indicator$grant_amount)
-                                              , nsmall     = 0
-                                              , big.mark   = ","
-                                              , scientific = FALSE)
-                                    , is.na(indicator$grant_amount)
-                                    , ""
-                                   )
+  indicator[formatting_integers_round] <- 
+    lapply( indicator[formatting_integers_round]
+          , function(x) replace(
+            format( as.numeric(x)
+                    , nsmall     = 0
+                    , big.mark   = ","
+                    , scientific = FALSE)
+            , is.na(x)
+            , ""
+                               )
+          )
 
   #Due to check.names = TRUE, X in front of colnames start with number
   # names(indicator)[names(indicator) == 
@@ -659,9 +661,10 @@ indicators_db <- function(sheet_names) {
                               )
 
     #Formatting different text values in an integer column
-    indicator$value[indicator$value2 == "n.a."] <- "n.a."
-    indicator$value[indicator$value2 == "n/a"]  <- "n/a"
-
+    indicator$value[indicator$value2 == "n.a."]   <- "n.a."
+    indicator$value[indicator$value2 == "n/a"]    <- "n/a"
+    indicator$value[indicator$value2 == "n.e.d."] <- "n.e.d."
+    
     indicator["value2"] <- NULL
 
   }
@@ -712,7 +715,7 @@ indicators_db <- function(sheet_names) {
   #Saving file
   openxlsx::write.xlsx( db
                       , here("2025_RF_indicators",
-                              paste("indicators_db-V0.97.xlsx", sep = "_"))
+                              paste("indicators_db-V0.98.xlsx", sep = "_"))
                       , sheetName = names(db)
                       , colNames  = TRUE #To avoid having green flags in excel
                       # , colWidths = "auto"
