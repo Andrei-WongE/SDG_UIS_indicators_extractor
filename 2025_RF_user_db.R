@@ -223,11 +223,6 @@ users_db <- function(country) {
        DF[[2]] <- db[[2]][db[[2]][["id"]] %in% subset_ind,]
        DF[[3]] <- db[[3]][db[[3]][["id"]] %in% subset_ind,]
 
-     # Subset C: by main indicators
-       subset_ind2 <- DF[[2]][["indicator"]]
-
-       DF[[3]] <- DF[[3]][DF[[3]][["var_name"]] %in% subset_ind2,]
-
      # Clean data
       #Delete unnecessary columns specific for data_country
         DF[[1]] <- DF[[1]] |> 
@@ -301,9 +296,9 @@ users_db <- function(country) {
                             , file  = here("2025_RF_indicators"
                                           , "GPE.PNG")
                             , width = 2
-                            , height = 0.5
+                            , height = 0.8
                             , startRow = 1
-                            , startCol = 1
+                            , startCol = 2
                             , units = "in"
                             , dpi = 300
                             )
