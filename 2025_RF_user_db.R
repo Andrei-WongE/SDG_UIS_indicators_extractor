@@ -124,7 +124,10 @@
          , paste(sapply(country, paste), "\n"))
  
  Sys.sleep(2)
- 
+
+ # Create output sub-folders
+ sapply(paste0(output_directory, "/", country), dir.create)
+
 # Columns from ind14 to delete
  clean_ind14 <- c( "ind_14ia_PA1"
                   ,"ind_14ia_PA1_percentage_1"
@@ -358,9 +361,12 @@ users_db <- function(country) {
                    , gridExpand = TRUE)
         }
 
-     # Saving workbook by country
+     # Saving workbook by country in each sub-folder
+       folder <- country[i]
+
        openxlsx::saveWorkbook( wb = wb2
                              , here("2025_RF_indicators/Countries_db"
+                             , folder
                              , paste0(country[i],".xlsx"))
                              , overwrite = TRUE
                              )
