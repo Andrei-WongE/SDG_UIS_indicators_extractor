@@ -10,6 +10,8 @@
 ##
 ## Date Created: 2022-08-31
 ##
+## Date Updated: 2022-08-31
+##
 ## Email: awongespejo@worldbank.org
 ##
 ## ---------------------------
@@ -128,7 +130,7 @@
  # Create output sub-folders
  sapply(paste0(output_directory, "/", country), dir.create)
 
-# Columns from ind14 to delete
+# Columns from ind14 to delete  // check this with Sissy - if we want to do it for all ind 
  clean_ind14 <- c( "ind_14ia_PA1"
                   ,"ind_14ia_PA1_percentage_1"
                   ,"ind_14ia_PA1_allocated"

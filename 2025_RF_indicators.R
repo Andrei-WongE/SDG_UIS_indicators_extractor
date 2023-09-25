@@ -10,11 +10,13 @@
 ##
 ## Date Created: 2022-07-20
 ##
-## Email: awongespejo@worldbank.org
+## Date Updated: 2023-09-23
 ##
+## Email: awongespejo@worldbank.org
+## Email: psoneja@worldbank.org
 ## ---------------------------
 ##
-## Notes: Aggregation of all indicators as main data base for PowerBI.
+## Notes: Aggregation of all indicators to create the main database for data visualization on PowerBI.
 ##   
 ##
 ## ---------------------------
@@ -32,7 +34,6 @@
                  progressr, utils, janitor)
 
 ## Runs the following --------
-
   
 ## Import and clean data -------------------------------------------------------
   
@@ -62,7 +63,7 @@
     # 3.ii
     # 4.i
     # 4.ii.a 
-    # 4.ii.b: No data
+    # 4.ii.b: No data (nothing has to change)
     # 5.i
     # 5.ii.a
     # 5.ii.b: No data
@@ -76,7 +77,7 @@
     # 8.ii.c
     # 8.iii.a
     # 8.iii.b: No data
-    # 8.iii.c: data_leg -> data_country
+    # 8.iii.c: data_leg -> data_country 
       # Listing workbooks
       suppressWarnings(rm(data.files))
   
@@ -93,7 +94,7 @@
       # Loading workbooks
       
       wb <- lapply(data.files, function(x) {
-        loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x))
+        loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x)) # only for ind 8iiic
       })
       
       # Rename woksheets
@@ -111,8 +112,53 @@
       
       rm(wb)
 
-    # 9: No data
-    # 10: No data
+    # 9i: No data
+    # 10i: No data
+    # 13i: No data
+    # 9ii_10ii_13ii: data_country_grant -> data_country
+      # Listing workbooks
+      suppressWarnings(rm(data.files))
+      
+      data.files <- list.files(
+        path = here("2025_RF_indicators", "Indicator_9ii_10ii_13ii"),
+        pattern = paste0("*.xlsx"),
+        recursive = TRUE
+      )
+      # Removing element form list, template
+      
+      pattern <- "template"
+      data.files <- data.files[-grep(pattern, data.files)]
+      
+      # Loading workbooks
+      
+      wb <- lapply(data.files, function(x) {
+        loadWorkbook(here("2025_RF_indicators", "Indicator_9ii_10ii_13ii", x))
+      })
+      
+      # Rename worksheets
+      
+      lapply(wb, function(x) {
+        renameWorksheet(
+          x,
+          "data_country_grant",
+          "data_country"
+        )
+      })
+      
+      # Save
+      
+      lapply(seq_along(wb), function(i) {
+        saveWorkbook(wb[[i]],
+                     file = here(
+                       "2025_RF_indicators", "Indicator_9ii_10ii_13ii",
+                       data.files[i]
+                     ),
+                     overwrite = TRUE
+        )
+      })
+      
+      rm(wb)
+      
     # 11: No data
     # 12.i & 12.ii: data_country_grant -> data_country
       # Listing workbooks
@@ -134,7 +180,7 @@
         loadWorkbook(here("2025_RF_indicators", "Indicator_12i_12ii", x))
       })
 
-      # Rename woksheets
+      # Rename worksheets
 
       lapply(wb, function(x) {
         renameWorksheet(
@@ -159,7 +205,6 @@
       rm(wb)
 
     # 13.i: No data
-    # 13.ii: No data
     # 14.i.a: data_country_grant -> data_country
       #Listing workbooks
       suppressWarnings(rm(data.files))
@@ -249,8 +294,6 @@
       
     # 14.ii: No data
     # 15: Accumulated data! Only upload last year data!
-    # 16.i: No data
-    # 16.ii: No data
     # 16.iii: data_country_grant -> data_country
        # Listing workbooks
       suppressWarnings(rm(data.files))
@@ -510,7 +553,7 @@
                                   ,"indi_2_f_pop"
                                  )
 
-  # Indicators that need 2b formatted from excel dates to date
+  # Indicators that need to be formatted from excel dates to date
    formatting_date <- c("grant_start_date"
                        ,"grant_report_submission_date"
                        ,"grant_closing_date"
@@ -604,13 +647,11 @@ indicators_db <- function(sheet_names) {
                  dplyr::relocate( "data_year"
                                 , .before = "data_update"
                                 )
-
-  #Formatting dates
-  indicator[(formatting_date)] <- lapply(indicator[(formatting_date)]
-                                        , openxlsx::convertToDate
-                                        , optional = TRUE
-                                        , orgin    = DateOrigin
-                                        )
+    # Filter the columns that actually exist in the dataframe
+    existing_columns <- formatting_date[formatting_date %in% colnames(indicator)]
+    
+    # Formatting dates - Apply conversion only to the existing columns
+    indicator[existing_columns] <- lapply(indicator[existing_columns], openxlsx::convertToDate, optional = TRUE, origin = DateOrigin)
 
   indicator[is.na(formatting_date)] <- ""
 
@@ -715,7 +756,7 @@ indicators_db <- function(sheet_names) {
   #Saving file
   openxlsx::write.xlsx( db
                       , here("2025_RF_indicators",
-                              paste("indicators_db-V0.98.xlsx", sep = "_"))
+                              paste("indicators_db-V1.xlsx", sep = "_"))
                       , sheetName = names(db)
                       , colNames  = TRUE #To avoid having green flags in excel
                       # , colWidths = "auto"
