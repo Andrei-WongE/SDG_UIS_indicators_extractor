@@ -1,4 +1,4 @@
-## ---------------------------
+## ----------------------------------------------------
 ##
 ## Script name: 2025_RF_indicators_aggregate
 ##
@@ -10,11 +10,11 @@
 ##
 ## Date Created: 2022-07-20
 ##
-## Date Updated: 2023-09-23
+## Date Updated: 2023-09-25
 ##
 ## Email: awongespejo@worldbank.org
 ## Email: psoneja@worldbank.org
-## ---------------------------
+## -----------------------------------------------------
 ##
 ## Notes: Aggregation of all indicators to create the main database for data visualization on PowerBI.
 ##   
@@ -294,6 +294,7 @@
       
     # 14.ii: No data
     # 15: Accumulated data! Only upload last year data!
+    # 16i & 16ii: Nothing has to change
     # 16.iii: data_country_grant -> data_country
        # Listing workbooks
       suppressWarnings(rm(data.files))
@@ -756,7 +757,7 @@ indicators_db <- function(sheet_names) {
   #Saving file
   openxlsx::write.xlsx( db
                       , here("2025_RF_indicators",
-                              paste("indicators_db-V1.xlsx", sep = "_"))
+                              paste("indicators_db-V2.xlsx", sep = "_"))
                       , sheetName = names(db)
                       , colNames  = TRUE #To avoid having green flags in excel
                       # , colWidths = "auto"
