@@ -130,7 +130,7 @@
  # Create output sub-folders
  sapply(paste0(output_directory, "/", country), dir.create)
 
-# Columns from ind14 to delete  // check this with Sissy - if we want to do it for all indicators?
+# Columns from ind14 to delete 
  clean_ind14 <- c( "ind_14ia_PA1"
                   ,"ind_14ia_PA1_percentage_1"
                   ,"ind_14ia_PA1_allocated"
@@ -195,6 +195,10 @@
                   ,"ind_14ib_PA8_percentage_met"
                   ,"ind_14ib_PA8_allocated"
                   ,"ind_14ib_PA8_allocated_met"
+                  
+                  ,"grant_report_submission_date"
+                  ,"ind_14ib_grant_report_submission_date"
+                  ,"data_year_cumulative"
                   )
  
 # Parallel Processing set-up
@@ -252,8 +256,84 @@ users_db <- function(country) {
 
       #Delete duplicates in metadata
        DF[[3]] <- DF[[3]] |>
-           select(!c("ind_year")) |>
-           dplyr::distinct()
+         select(!c("ind_year")) |>
+         dplyr::distinct()
+       
+       DF[[3]] <- DF[[3]] %>%
+         filter(!((var_name %in% c("country", "entity","region", "income_group", "pcfc", "iso")) & (ind_id != "4i")))
+         
+       
+       DF[[3]] <- DF[[3]] %>%
+         filter(!((var_name %in% c("income_level") & (ind_id == "15"))))
+      
+       # Indicators that need to be rounded to 2 decimal places.
+         round_indicators <- c("indi_2"
+                               ,"indi_2_f"
+                               ,"base_education_share"
+                               ,"current_education_share"
+                               ,"indi_3ia"
+                             ,"indi_3ia_f"
+                             ,"indi_3ib"
+                             ,"indi_3ib_f"
+                             ,"indi_3iia"
+                             ,"indi_3iia_f"
+                             ,"indi_3iia_rural"
+                             ,"indi_3iia_urban"
+                             ,"indi_3iia_q1"
+                             ,"indi_3iia_q2"
+                             ,"indi_3iia_q3"
+                             ,"indi_3iia_q4"
+                             ,"indi_3iia_q5"
+                             ,"indi_3iib"
+                             ,"indi_3iib_f"
+                             ,"indi_3iib_rural"
+                             ,"indi_3iib_urban"
+                             ,"indi_3iib_q1"
+                             ,"indi_3iib_q2"
+                             ,"indi_3iib_q3"
+                             ,"indi_3iib_q4"
+                             ,"indi_3iib_q5"
+                             ,"indi_3iic"
+                             ,"indi_3iic_f"
+                             ,"indi_3iic_rural"
+                             ,"indi_3iic_urban"
+                             ,"indi_3iic_q1"
+                             ,"indi_3iic_q2"
+                             ,"indi_3iic_q3"
+                             ,"indi_3iic_q4"
+                             ,"indi_3iic_q5"
+                             ,"indi_5i"
+                             ,"indi_6ai"
+                             ,"indi_6ai_f"
+                             ,"indi_6aii"
+                             ,"indi_6aii_f"
+                             ,"indi_6bi"
+                             ,"indi_6bi_f"
+                             ,"indi_6bii"
+                             ,"indi_6bii_f"
+                             ,"indi_6ci"
+                             ,"indi_6ci_f"
+                             ,"indi_6cii"
+                             ,"indi_6cii_f"
+                             ,"indi_7ia"
+                             ,"indi_7ia_f"
+                             ,"indi_7ib"
+                             ,"indi_7ib_f"
+                             ,"indi_7ic"
+                             ,"indi_7ic_f"
+                             ,"indi_7id"
+                             ,"indi_7id_f"
+       )
+       
+      round_indicators_country <- intersect(round_indicators,names(DF[[1]]))
+      
+         DF[[1]][round_indicators_country] <- lapply( DF[[1]][round_indicators_country]
+                                                , function(x) replace(
+                                                  round( as.numeric(x), 2)
+                                                  , is.na(x)
+                                                  , ""
+                                                )
+         )
          
      # Transpose data_country sheet
        # DF[[1]] <- group_by(ind_id, ind_year) |>
@@ -330,7 +410,7 @@ users_db <- function(country) {
                                )
 
         #Numeric formatting
-        options("openxlsx.numFmt" = "0.00") # 2 decimal cases formatting
+        #options("openxlsx.numFmt" = "0.00") # 2 decimal cases formatting
   
         # numeric_style_1 <- createStyle(numFmt = "#,##0")
         # addStyle( wb2, 2, style = numeric_style_1

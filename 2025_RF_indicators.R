@@ -10,7 +10,7 @@
 ##
 ## Date Created: 2022-07-20
 ##
-## Date Updated: 2023-09-25
+## Date Updated: 2023-09-29
 ##
 ## Email: awongespejo@worldbank.org
 ## Email: psoneja@worldbank.org
@@ -97,7 +97,7 @@
         loadWorkbook(here("2025_RF_indicators", "Indicator_8iiic", x)) # only for ind 8iiic
       })
       
-      # Rename woksheets
+      # Rename worksheets
       
       lapply(wb, function(x) renameWorksheet(x, "data_leg", "data_country"))
       
@@ -427,7 +427,7 @@
       rm(wb)
   }
   
-  # Indicators that need 2b formatted to comma separated thousands, 2 digit
+  # Indicators that need to be  formatted to comma separated thousands, 2 digit
    formatting_integers <- c("ind_14ia_PA1_percentage_1"
                           ,"ind_14ia_PA1_allocated"
                           ,"ind_14ia_PA1_allocated_1"
@@ -548,8 +548,8 @@
                           ,"indi_7id_f"
                           )
 
-   formatting_integers_round <- c( "indi_1_pop"
-                                  ,"grant_amount"
+   formatting_integers_round <- c( #"indi_1_pop"
+                                  "grant_amount"
                                   ,"indi_2_pop"
                                   ,"indi_2_f_pop"
                                  )
@@ -559,7 +559,61 @@
                        ,"grant_report_submission_date"
                        ,"grant_closing_date"
                        ,"EOI_approval_date"
+                       ,"ind_14ia_grant_start_date"
+                       ,"ind_14ib_grant_start_date"
+                       ,"ind_14ib_grant_closing_date"
+                       ,"ind_16i_start_date"
+                       ,"ind_16i_closing_date"
                        )
+   
+   # Indicators that need to be rounded to 2 decimal places. Add the columns
+   round_indicators <- c("base_education_share"
+                         ,"current_education_share"
+                         ,"indi_3ia"
+                         ,"indi_3ia_f"
+                         ,"indi_3ib"
+                         ,"indi_3ib_f"
+                         ,"indi_3iia"
+                         ,"indi_3iia_f"
+                         ,"indi_3iia_rural"
+                         ,"indi_3iia_urban"
+                         ,"indi_3iia_q1"
+                         ,"indi_3iia_q2"
+                         ,"indi_3iia_q3"
+                         ,"indi_3iia_q4"
+                         ,"indi_3iia_q5"
+                         ,"indi_3iib"
+                         ,"indi_3iib_f"
+                         ,"indi_3iib_rural"
+                         ,"indi_3iib_urban"
+                         ,"indi_3iib_q1"
+                         ,"indi_3iib_q2"
+                         ,"indi_3iib_q3"
+                         ,"indi_3iib_q4"
+                         ,"indi_3iib_q5"
+                         ,"indi_3iic"
+                         ,"indi_3iic_f"
+                         ,"indi_3iic_rural"
+                         ,"indi_3iic_urban"
+                         ,"indi_3iic_q1"
+                         ,"indi_3iic_q2"
+                         ,"indi_3iic_q3"
+                         ,"indi_3iic_q4"
+                         ,"indi_3iic_q5"
+                         ,"indi_5i"
+                         ,"indi_6ci"
+                         ,"indi_6ci_f"
+                         ,"indi_6cii"
+                         ,"indi_6cii_f"
+                         ,"indi_7ia"
+                         ,"indi_7ia_f"
+                         ,"indi_7ib"
+                         ,"indi_7ib_f"
+                         ,"indi_7ic"
+                         ,"indi_7ic_f"
+                         ,"indi_7id"
+                         ,"indi_7id_f"
+                         )
 
   # Get Date Origin for data conversion
    DateOrigin <- getDateOrigin(here("2025_RF_indicators"
@@ -637,7 +691,7 @@ indicators_db <- function(sheet_names) {
                dplyr::relocate(c("id", "ind_id", "ind_year"))
 
   # Cleaning database and order variables
-  values_delete <- c("Technical%", "Notes%") # Thanks DescTools!
+  values_delete <- c("Technical%", "Notes%", "Notes:") # Thanks DescTools!
 
   if (sheet_names[i] == "data_country") {
 
@@ -679,6 +733,14 @@ indicators_db <- function(sheet_names) {
             , ""
                                )
           )
+  
+  indicator[round_indicators] <- lapply( indicator[round_indicators]
+                                            , function(x) replace(
+                                              round( as.numeric(x), 2)
+                                              , is.na(x)
+                                              , ""
+                                            )
+  )
 
   #Due to check.names = TRUE, X in front of colnames start with number
   # names(indicator)[names(indicator) == 
@@ -770,7 +832,7 @@ indicators_db <- function(sheet_names) {
          , paste(sapply(ind_final, paste), "\n"))
 
   rm(db)
-  }
-
+}
   indicators_db(sheet_names)
-
+  
+   rm(db) 
