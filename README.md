@@ -1,5 +1,13 @@
 # SDG_UIS_indicators_extractor
-Automatize extraction of indicators
+
+## Purpose
+
+This repository automates the extraction and consolidation of GPE 2025 Results Framework (RF) indicators sourced from dozens of individual Excel databases. Each database file corresponds to a specific indicator, organized by year (e.g., CY2020, FY2022) and entity (country or sub-national entity). The pipeline is orchestrated by `Run_me.R`, which sequentially executes two main scripts:
+
+- **`2025_RF_indicators.R`** — Reads all indicator Excel files from the `2025_RF_indicators/` directory, standardizes worksheet names across files, applies data-type formatting (dates, integers, rounded decimals), and merges all indicators into a single consolidated database with three sheets: `data_country`, `data_aggregate`, and `metadata`.
+- **`2025_RF_user_db.R`** — Takes the consolidated database produced above and generates a separate, formatted Excel workbook for each country and sub-national entity (e.g., Pakistan–Balochistan, Tanzania–Zanzibar), including an index sheet and GPE branding.
+
+## Log of issues and changes
 
 Updating of code for FY 2023
 
